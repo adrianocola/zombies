@@ -2,11 +2,29 @@ doctype html
 html
    head
       script(src="//code.jquery.com/jquery-2.1.0.min.js")
+      script(src="//underscorejs.org/underscore-min.js")
       script(src="/js/index.js")
 
       link(rel='stylesheet', href='/css/index.css')
 
    body
       div.map
-         - for (var x = 0; x < 169; x++)
+         - for (var x = 0; x < 121; x++)
             div.slot
+               div.thing.zombie(class="rotate#{_.random(1, 12)}")
+               - if (x%2===0)
+                  div.thing.zombie(class="rotate#{_.random(1, 12)}")
+               - if (x%3===0)
+                  div.thing.zombie(class="rotate#{_.random(1, 12)}")
+               - if (x%4===0)
+                  div.thing.zombie(class="rotate#{_.random(1, 12)}")
+               - if (x%5===0)
+                  div.thing.zombie(class="rotate#{_.random(1, 12)}")
+               - if (x%6===0)
+                  div.thing.zombie(class="rotate#{_.random(1, 12)}")
+               - if (x%7===0)
+                  div.thing.zombie(class="rotate#{_.random(1, 12)}")
+               - if (x%8===0)
+                  div.thing.zombie(class="rotate#{_.random(1, 12)}")
+               - if (x%9===0)
+                  div.thing.zombie(class="rotate#{_.random(1, 12)}")

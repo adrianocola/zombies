@@ -1,5 +1,5 @@
 var SlotSchema = app.mongoose.Schema({
-    name: String
+    pos: {type: [Number], index: '2d'}
 });
 
 app.models.Slot = app.mongoose.model('Slot', SlotSchema);

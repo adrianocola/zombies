@@ -1,3 +1,5 @@
+
+var _ = GLOBAL._ = require('lodash');
 var express = require('express');
 var app = GLOBAL.app = express();
 var server = require('http').Server(app);

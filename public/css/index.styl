@@ -1,23 +1,117 @@
 @import 'nib'
 
 .map
-  width: 416px
+  width: 528px
   line-height: 0
   border: 1px solid black
   user-select: none
 
 .slot
-  width: 32px
-  height: 32px
+  width: 48px
+  height: 48px
   display: inline-block
   box-sizing: border-box
   padding: 0
   margin: 0
   background-color: green
   user-select: none
+  position: relative
 
 .slot:hover
   border: 1px solid #aaa
 
 .slot.selected
   border: 1px solid #fff
+
+.zombie
+  background-image: url('/img/zombie_gray.png')
+  background-size: 16px 16px
+
+.thing
+  position: absolute
+  width: 16px
+  height: 16px
+  display: inline-block
+  box-sizing: border-box
+
+.rotate1
+  transform: rotate(30deg)
+
+.rotate2
+  transform: rotate(60deg)
+
+.rotate3
+  transform: rotate(90deg)
+
+.rotate4
+  transform: rotate(120deg)
+
+.rotate5
+  transform: rotate(150deg)
+
+.rotate6
+  transform: rotate(180deg)
+
+.rotate7
+  transform: rotate(210deg)
+
+.rotate8
+  transform: rotate(240deg)
+
+.rotate9
+  transform: rotate(270deg)
+
+.rotate10
+  transform: rotate(300deg)
+
+.rotate11
+  transform: rotate(330deg)
+
+.rotate12
+  transform: rotate(360deg)
+
+
+.thing:nth-child(1) {
+  left: 0px
+  top: 0px
+}
+
+.thing:nth-child(2) {
+  left: 16px
+  top: 0px
+}
+
+.thing:nth-child(3) {
+  left: 32px
+  top: 0px
+}
+
+.thing:nth-child(4) {
+  left: 0px
+  top: 16px
+}
+
+.thing:nth-child(5) {
+  left: 16px
+  top: 16px
+}
+
+.thing:nth-child(6) {
+  left: 32px
+  top: 16px
+}
+
+.thing:nth-child(7) {
+  left: 0px
+  top: 32px
+}
+
+.thing:nth-child(8) {
+  left: 16px
+  top: 32px
+}
+
+.thing:nth-child(9) {
+  left: 32px
+  top: 32px
+}
