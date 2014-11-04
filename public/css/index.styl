@@ -16,6 +16,7 @@
   background-color: green
   user-select: none
   position: relative
+  border: 1px solid transparent
 
 .slot:hover
   border: 1px solid #aaa
@@ -26,6 +27,11 @@
 .zombie
   background-image: url('/img/zombie_gray.png')
   background-size: 16px 16px
+  width: 16px
+  height: 16px
+
+.slot:hover .zombie, .slot.selected .zombie
+  background-image: url('/img/zombie.png')
 
 .thing
   position: absolute

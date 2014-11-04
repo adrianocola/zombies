@@ -3,6 +3,7 @@ html
    head
       script(src="//cdn.jsdelivr.net/jquery/2.1.1/jquery.min.js")
       script(src="//cdn.jsdelivr.net/underscorejs/1.7.0/underscore-min.js")
+      script(src="//raw.githubusercontent.com/darsain/motio/master/dist/motio.min.js")
       script(src="/js/index.js")
 
       link(rel='stylesheet', href='/css/index.css')
@@ -11,20 +12,29 @@ html
       div.map
          - for (var x = 0; x < 121; x++)
             div.slot
-               div.thing.zombie(class="rotate#{_.random(1, 12)}")
-               - if (x%2===0)
-                  div.thing.zombie(class="rotate#{_.random(1, 12)}")
-               - if (x%3===0)
-                  div.thing.zombie(class="rotate#{_.random(1, 12)}")
-               - if (x%4===0)
-                  div.thing.zombie(class="rotate#{_.random(1, 12)}")
-               - if (x%5===0)
-                  div.thing.zombie(class="rotate#{_.random(1, 12)}")
-               - if (x%6===0)
-                  div.thing.zombie(class="rotate#{_.random(1, 12)}")
-               - if (x%7===0)
-                  div.thing.zombie(class="rotate#{_.random(1, 12)}")
-               - if (x%8===0)
-                  div.thing.zombie(class="rotate#{_.random(1, 12)}")
-               - if (x%9===0)
-                  div.thing.zombie(class="rotate#{_.random(1, 12)}")
+               div.thing
+                  div.zombie(class="rotate#{_.random(1, 12)}")
+               div.thing
+                  - if (x%2===0)
+                     div.zombie(class="rotate#{_.random(1, 12)}")
+               div.thing
+                  - if (x%3===0)
+                     div.zombie(class="rotate#{_.random(1, 12)}")
+               div.thing
+                  - if (x%4===0)
+                     div.zombie(class="rotate#{_.random(1, 12)}")
+               div.thing
+                  - if (x%5===0)
+                     div.zombie(class="rotate#{_.random(1, 12)}")
+               div.thing
+                  - if (x%6===0)
+                     div.zombie(class="rotate#{_.random(1, 12)}")
+               div.thing
+                  - if (x%7===0)
+                     div.zombie(class="rotate#{_.random(1, 12)}")
+               div.thing
+                  - if (x%8===0)
+                     div.zombie(class="rotate#{_.random(1, 12)}")
+               div.thing
+                  - if (x%9===0)
+                     div.zombie(class="rotate#{_.random(1, 12)}")
