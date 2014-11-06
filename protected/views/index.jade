@@ -1,17 +1,28 @@
 doctype html
 html
    head
-      script(src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js")
-      script(src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js")
-      //script(src="//raw.githubusercontent.com/darsain/motio/master/dist/motio.min.js")
-      script(src="/js/index.js")
-
+      link(rel='stylesheet', href='/css/animate.css')
       link(rel='stylesheet', href='/css/index.css')
 
    body
-      div.map
+      script(src="/js/vendor/jquery.min.js")
+      script(src="/js/vendor/jquery.transform2d.js")
+      script(src="/js/vendor/underscore.min.js")
+      script(src="/js/vendor/backbone.min.js")
+      script(src="/js/vendor/velocity.min.js")
+      script(src="/js/vendor/motio.min.js")
+      script(src="/js/vendor/peps.js")
+
+      script(src="/js/jst.js")
+      script(src="/js/models/consts.js")
+      script(src="/js/models/World.js")
+      script(src="/js/models/Tile.js")
+      script(src="/js/Engine.js")
+      script(src="/js/index.js")
+
+      //div.map
          - for (var x = 0; x < 121; x++)
-            div.slot
+            div.slot(class="#{_.random(1, 4)%4?'building':''}")
                div.thing
                   div.zombie(class="rotate#{_.random(1, 12)}")
                div.thing

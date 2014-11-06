@@ -12,6 +12,8 @@ var serveStatic = require('serve-static');
 
 var io = app.io = require('socket.io')(server);
 var mongoose = app.mongoose = require('mongoose');
+var grunt = require('grunt');
+var watch = require('watch');
 
 function compile_nib(str, path) {
     return stylus(str)
@@ -31,6 +33,12 @@ app.use(serveStatic('./public'));
 
 var models = require('./models');
 var routes = require('./routes');
+
+grunt.tasks(['default'],{},function(){});
+
+watch.watchTree('public/partials',function(){
+    grunt.tasks(['default'],{},function(){});
+});
 
 
 server.listen(3000, function () {
