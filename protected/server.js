@@ -9,11 +9,13 @@ var nib = require('nib');
 
 //express middlewares
 var serveStatic = require('serve-static');
+var favicon = require('serve-favicon');
 
 var io = app.io = require('socket.io')(server);
 var mongoose = app.mongoose = require('mongoose');
 var grunt = require('grunt');
 var watch = require('watch');
+
 
 function compile_nib(str, path) {
     return stylus(str)
@@ -27,9 +29,9 @@ app.set('view engine', 'jade');
 
 app.engine('jade', require('jade').__express);
 
+app.use(favicon('./public/favicon.ico'));
 app.use(stylus.middleware({ src: './public', compile: compile_nib}));
 app.use(serveStatic('./public'));
-
 
 var models = require('./models');
 var routes = require('./routes');
@@ -40,8 +42,7 @@ watch.watchTree('public/partials',function(){
     grunt.tasks(['default'],{},function(){});
 });
 
-
-server.listen(3000, function () {
+server.listen(4000, function () {
 
     var host = server.address().address
     var port = server.address().port

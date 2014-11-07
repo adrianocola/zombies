@@ -32,3 +32,4 @@ node_modules
 
 #other
 public/css/*.css
+public/js/jst.js

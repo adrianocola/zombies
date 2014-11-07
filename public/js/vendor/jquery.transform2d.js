@@ -192,7 +192,7 @@
     if ( propertyHook ) {
         $.cssHooks[_transform] = propertyHook;
     }
-// we need a unique setter for the animation logic
+// we need a unique setter for the speed logic
     propertyGet = propertyHook && propertyHook.get || $.css;
 
     /*
@@ -215,7 +215,7 @@
                 start = propertyGet( elem, supportProperty );
             }
 
-            // force layout only once per animation
+            // force layout only once per speed
             if ( supportMatrixFilter ) {
                 elem.style.zoom = 1;
             }
@@ -418,7 +418,7 @@
     }
 
 // build the list of transform functions to interpolate
-// use the algorithm described at http://dev.w3.org/csswg/css3-2d-transforms/#animation
+// use the algorithm described at http://dev.w3.org/csswg/css3-2d-transforms/#speed
     function interpolationList( start, end ) {
         var list = {
                 start: [],
@@ -431,7 +431,7 @@
         ( start == "none" || isAffine( start ) ) && ( start = "" );
         ( end == "none" || isAffine( end ) ) && ( end = "" );
 
-        // if end starts with the current computed style, this is a relative animation
+        // if end starts with the current computed style, this is a relative speed
         // store computed style as the origin, remove it from start and end
         if ( start && end && !end.indexOf("matrix") && toArray( start ).join() == toArray( end.split(")")[0] ).join() ) {
             list.origin = start;

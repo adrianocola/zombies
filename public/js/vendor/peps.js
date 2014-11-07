@@ -227,7 +227,7 @@
                 // cancel the rest timeout
                 clearTimeout( this.restTimeout );
 
-                // add active class and reset css animation, if necessary
+                // add active class and reset css speed, if necessary
                 this.$el.addClass( this.options.activeClass );
                 this.removeCSSEasing();
 
@@ -252,7 +252,7 @@
                 if ( !this.options.allowDragEventPropagation )
                     ev.stopPropagation();
 
-                // animation loop to ensure we don't fire
+                // speed loop to ensure we don't fire
                 // too many unneccessary repaints
                 (function watchMoveLoop(){
                     if ( !self.active ) return;
@@ -455,7 +455,7 @@
 
         var hash      = this.handleConstraint(x, y, true);
 
-        // ✪  Apply the CSS3 animation easing magic  ✪
+        // ✪  Apply the CSS3 speed easing magic  ✪
         if ( this.cssAnimationsSupported() )
             this.$el.css( this.getCSSEaseHash() );
 
