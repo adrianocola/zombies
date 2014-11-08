@@ -11,10 +11,11 @@
         initialize: function(options){
 
             this.options = {
-                visibleTiles: 9,        //number of tiles visible (must be an odd number)
-                tileSize: 48,           //tile individual size
-                tileSlots: 9,            //number of slots in each tile (sqrt must be an integer)
-                speed: 1000
+                visibleTiles: 11,   //number of tiles visible (must be an odd number)
+                tileSize: 48,       //tile individual size
+                tileSlots: 9,       //number of slots in each tile (sqrt must be an integer)
+                scalarSpeed: 48,    //speed in pixels/s
+                angularSpeed: 4    //speed in rads/s
             }
 
             this.options = _.extend(this.options,options);
@@ -34,15 +35,16 @@
                 slotCols: Math.sqrt(this.options.tileSlots),
                 totalTileSlots: [],
                 border: this.options.visibleTiles*this.options.tileSize/2 - this.options.tileSize/2,
-                visibleSize: this.options.visibleTiles*this.options.tileSize
+                visibleSize: this.options.visibleTiles*this.options.tileSize,
+                scalarSpeedMs: this.options.scalarSpeed/1000,
+                angularSpeedMs: this.options.angularSpeed/1000
             });
-
-            console.log(this.consts.engineOffX);
-            console.log(this.consts.engineOffY);
 
             for(var i = 0; i < this.options.tileSlots; i++){
                 this.consts.totalTileSlots.push(i+"");
             }
+
+            //$.Velocity.defaults.queue = false;
 
         },
 
@@ -63,6 +65,22 @@
 
             return tile;
 
+        },
+
+        _createAnimView: function(){
+            var animView = $('<div class="anim"></div>');
+
+            animView.css({
+                width: (this.consts.totalColumns*this.options.tileSize) + "px",
+                height: (this.consts.totalRows*this.options.tileSize) + "px"
+            });
+
+            this.$viewport.prepend(animView);
+            return animView;
+        },
+
+        _removeAnimView: function(animView){
+            //animView.remove();
         },
 
         _add: function(rows, cols, tile_options){
@@ -111,7 +129,7 @@
             setTimeout(function(){
                 that._removeExtraRows(row_qtd, Util.otherSide(rows_side));
                 that._removeExtraCols(col_qtd, Util.otherSide(cols_side));
-            },this.options.speed * _.max([row_qtd,col_qtd]));
+            },100);
 
         },
 
@@ -174,10 +192,17 @@
 
             this._add(-rows,-cols,{is_new:true});
 
-            this.$map.velocity({
+            var duration = _.max([Math.abs(rows),Math.abs(cols)]) * this.options.tileSize / this.consts.scalarSpeedMs;
+
+            $.Velocity(this.el.getElementsByClassName('tile'),{
                 top: '+=' + (rows*this.options.tileSize) + "px",
                 left: '+=' + (cols*this.options.tileSize) + "px"
-            },this.options.speed * _.max([Math.abs(rows),Math.abs(cols)]));
+            },{duration: duration, queue: false, easing: 'linear'});
+
+            $.Velocity(this.el.getElementsByClassName('anim'),{
+                top: '+=' + (rows*this.options.tileSize) + "px",
+                left: '+=' + (cols*this.options.tileSize) + "px"
+            },{duration: duration, queue: false, easing: 'linear'});
 
         },
 
@@ -186,8 +211,6 @@
 
             this.$el.html('<div class="viewport"><div class="map"></div></div>');
             this.$viewport = this.$('.viewport');
-
-
             this.$map = this.$('.map');
 
             for(var r = this.consts.firstRow; r <= this.consts.lastRow; r++){
@@ -276,7 +299,7 @@
 
         _absolutePosition: function(){
 
-            return Point(this.col*this.engine.options.tileSize,this.row*this.engine.options.tileSize);
+            return Point(this.engine.consts.engineOffX + this.col*this.engine.options.tileSize,this.engine.consts.engineOffY + this.row*this.engine.options.tileSize);
 
         },
 
@@ -329,47 +352,94 @@
                 slot = first_pos;
             }else{
                 // ** random positioning **
-                //var pos = _.sample(_.difference(this.engine.consts.totalTileSlots, _.keys(this.things)));
-                //x = (pos%(this.engine.consts.slotRows));
-                //y = Math.floor(pos/(this.engine.consts.slotCols));
-                //this.things[pos] = thing;
+                slot = _.sample(_.difference(this.engine.consts.totalTileSlots, _.keys(this.things)));
 
                 // ** static positioning **
-                if(length<=first_pos){
-                    length--;
-                    if(length<0) length = 0;
-                }
-                slotPoint = this._slotPoint(length);
-                slot = length;
+                //if(length<=first_pos){
+                //    length--;
+                //    if(length<0) length = 0;
+                //}
+                //slotPoint = this._slotPoint(length);
+                //slot = length;
             }
 
+            slotPoint = this._slotPoint(slot);
             this.things[slot] = thing;
 
             //thing already in a tile
             if(thing.tile){
 
                 thing.tile.removeThing(thing);
+                thing.$el.velocity("stop");
 
+                if(!thing.$el.hasClass('moving')){
+
+                    thing.$el.addClass('moving');
+
+                    var thingCurrentAbsPos = thing.absolutePosition();
+
+                    var animView = this.engine._createAnimView();
+
+                    //first position thing in absolute map
+                    animView.append(thing.$el);
+                    thing.$el.css({
+                        left: thingCurrentAbsPos.x,
+                        top: thingCurrentAbsPos.y
+                    });
+
+                    thing.anim = animView;
+                }
+
+
+                //then move thing in absolute map
                 var tileAbsPos = this._absoluteSlotPosition(slot);
                 var currentThingPos = thing.currentPosition();
 
-                thing.$el.velocity("stop");
+                var diffX = tileAbsPos.x - currentThingPos.x;
+                var diffY = tileAbsPos.y - currentThingPos.y;
+
+                thing.lookTo(diffX,diffY);
 
                 thing.$el.velocity({
-                    left: "+=" + (this.engine.options.engineOffX + tileAbsPos.x - currentThingPos.x) + "px",
-                    top: "+=" + (this.engine.options.engineOffY + tileAbsPos.y - currentThingPos.y) + "px"
-                },3000);
+                    left: "+=" + diffX + "px",
+                    top: "+=" + diffY + "px"
+                }, Math.sqrt(Math.pow(diffX,2) + Math.pow(diffY,2))/this.engine.consts.scalarSpeedMs,function(){
+                    //after movement, add thing to his tile
+                    that.$el.append(thing.$el);
+                    thing.$el.removeClass('moving');
+                    thing.$el.css({
+                        left: (that.engine.consts.slotSize * slotPoint.x) + "px",
+                        top: (that.engine.consts.slotSize * slotPoint.y) + "px"
+                    });
+
+                    that.engine._removeAnimView(thing.anim);
+                });
+
+
+                //var tileAbsPos = this._absoluteSlotPosition(slot);
+                //var currentThingPos = thing.currentPosition();
+
+
 
 
             }else{
-                var tileAbsPos = this._absoluteSlotPosition(slot);
-
-                this.engine.$map.append(thing.render().el);
                 //TODO fazer thing se desenhar no render
+
+
+                // ** posição absoluta no map **
+                //var tileAbsPos = this._absoluteSlotPosition(slot);
+                //this.engine.$map.append(thing.render().el);
+                //thing.$el.css({
+                //    left: (this.engine.options.engineOffX + tileAbsPos.x) + "px",
+                //    top: (this.engine.options.engineOffY + tileAbsPos.y) + "px"
+                //});
+
+                this.$el.append(thing.render().el);
                 thing.$el.css({
-                    left: (this.engine.options.engineOffX + tileAbsPos.x) + "px",
-                    top: (this.engine.options.engineOffY + tileAbsPos.y) + "px"
+                    left: (this.engine.consts.slotSize * slotPoint.x) + "px",
+                    top: (this.engine.consts.slotSize * slotPoint.y) + "px"
                 });
+
             }
 
             thing.engine = this.engine;
@@ -454,6 +524,8 @@
             this.engine = this.options.engine;
             this.tile = this.options.tile;
             this.slot = this.options.slot;
+            this.anim = this.options.anim;
+            this.rotation = this.options.rotation || 0;
 
             if(this.options.type){
                 this.$el.addClass(this.options.type);
@@ -461,10 +533,30 @@
 
         },
 
+        //current position relative to parent, in pixels
         currentPosition: function(){
             var pos = this.$el.position();
             return new Point(pos.left,pos.top);
+        },
+
+        //absolute position in $map ( as if the thing was in his slot)
+        //do not use when moving (use currentPosition() )
+        absolutePosition: function(){
+            return this.tile._absoluteSlotPosition(this.slot);
+        },
+
+        lookTo: function(x,y){
+
+            var rad = Math.atan2(y,x);
+
+            var deg = 90 + (rad * 180 /Math.PI);
+
+            this.$el.velocity({rotateZ: deg + 'deg'},{duration: 200, queue: false});
+
+            this.rotation = deg;
+
         }
+
 
     });
 
