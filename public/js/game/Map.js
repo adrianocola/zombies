@@ -113,15 +113,15 @@ ZT.Map.prototype.move = function(moveX, moveY){
     this.realCenterY = centerTile.realY;
 
     for(var x = 0; x < absX; x++){
+        var mapX = isRight?this.lastX-x:this.firstX+x;
         for(var y = this.firstY; y <= this.lastY; y++){
-            var mapX = isRight?this.lastX-x:this.firstX+x;
             this.addTile(mapX,y);
         }
     }
 
     for(var y = 0; y < absY; y++){
+        var mapY = isBottom?this.lastY-y:this.firstY+y;
         for(var x = this.firstX; x <= this.lastX; x++){
-            var mapY = isBottom?this.lastY-y:this.firstY+y;
             var tile = this.addTile(x,mapY);
         }
     }

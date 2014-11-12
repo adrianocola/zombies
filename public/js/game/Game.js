@@ -21,6 +21,7 @@ ZT.Game = function(options){
     });
 
     function preload(){
+        console.log(this);
         game.phaser.load.image('building', 'img/building.png');
         game.phaser.load.image('player', 'img/player2.png');
         game.phaser.load.image('grass', 'img/grass.png');
@@ -115,7 +116,8 @@ ZT.Game = function(options){
         game.phaser.camera.x = -game.width/4 + game.tileSize/4;
         game.phaser.camera.y = -game.height/4 + game.tileSize/4;
 
-        //game.phaser.camera.follow(game.player);
+        game.phaser.camera.follow(game.player);
+        game.phaser.camera.deadzone = new Phaser.Rectangle(game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.2, game.visibleSize*game.tileSize*0.2);
     }
 
     function update(){
