@@ -7,21 +7,30 @@ html
       link(rel='stylesheet', href='/css/index.css')
 
    body
+      script(type="text/javascript").
+         var ZT = ZT || {}; //creates ZT namespace
       script(src="/js/vendor/jquery.min.js")
-      script(src="/js/vendor/jquery.transform2d.js")
-      script(src="/js/vendor/underscore.min.js")
-      script(src="/js/vendor/backbone.min.js")
-      script(src="/js/vendor/velocity.min.js")
-      script(src="/js/vendor/velocity.ui.js")
-      script(src="/js/vendor/peps.js")
-      script(src="/js/vendor/TweenMax.min.js")
+      //script(src="/js/vendor/jquery.transform2d.js")
+      //script(src="/js/vendor/underscore.min.js")
+      //script(src="/js/vendor/backbone.js")
+      //script(src="/js/vendor/velocity.min.js")
+      //script(src="/js/vendor/velocity.ui.js")
+      //script(src="/js/vendor/peps.js")
+      //script(src="/js/vendor/TweenMax.min.js")
+      script(src="/js/vendor/phaser.js")
+      script(src="/js/game/Util.js")
+      script(src="/js/game/Tile.js")
+      script(src="/js/game/Map.js")
+      script(src="/js/game/Game.js")
 
       script(src="/js/jst.js")
-      script(src="/js/models/consts.js")
-      script(src="/js/models/World.js")
-      script(src="/js/models/Tile.js")
-      script(src="/js/Engine.js")
-      script(src="/js/index.js")
+      //script(src="/js/models/consts.js")
+      //script(src="/js/models/World.js")
+      //script(src="/js/models/Tile.js")
+      //script(src="/js/Engine.js")
+      //script(src="/js/index.js")
+      //script(src="/js/index2.js")
+      script(src="/js/index3.js")
 
       //div.map
          - for (var x = 0; x < 121; x++)
