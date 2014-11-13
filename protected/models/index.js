@@ -5,6 +5,7 @@ var mongoose = app.mongoose = require('mongoose');
 
 if(process.env.NODE_ENV === "prod"){
 
+    console.log("CONNECTING TO PROD!");
     mongoose.connect('mongodb://zombies:zombies@localhost/zombies');
 
 }else{
