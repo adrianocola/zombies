@@ -8,15 +8,24 @@ html
 
    body
       script(src="/js/vendor/jquery.min.js")
-      script(src="/js/vendor/underscore.min.js")
+      script(src="/js/vendor/underscore.js")
       script(src="/js/vendor/backbone.js")
       script(src="/js/vendor/peps.js")
 
       script(src="/js/jst.js")
       script(src="/js/editor.js")
 
+      script(type="text/javascript").
+         var world = !{JSON.stringify(world)};
+         var tileTypes = !{JSON.stringify(tileTypes)};
+
+         var tileTypesMap = {};
+
+         _.each(tileTypes,function(tileType){
+            tileTypesMap[tileType._id] = tileType;
+         });
+
 
       div.map
-         div.viewport coisa
       div.editor
 

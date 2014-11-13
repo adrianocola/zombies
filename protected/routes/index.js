@@ -4,7 +4,18 @@ app.get('/', function (req, res) {
 })
 
 app.get('/editor', function (req, res) {
-    res.render('editor');
+
+    app.models.World.findOne({name: "zombietown"}, function(err, world) {
+
+        app.models.TileType.find({}, function(err, tileTypes) {
+
+            res.render('editor',{world: world, tileTypes: tileTypes});
+
+        });
+
+    });
+
+
 })
 
 module.exports = require('require-directory')(module);
