@@ -13,7 +13,7 @@ if(process.env.NODE_ENV === "prod"){
 }
 
 mongoose.connection.on('connected', function() {
-    app.log.info('Connected to MongoDB!');
+    console.log('Connected to MongoDB!');
 });
 
 
