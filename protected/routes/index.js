@@ -9,7 +9,7 @@ app.get('/editor', function (req, res) {
 
         app.models.TileType.find({}, function(err, tileTypes) {
 
-            res.render('editor',{world: world, tileTypes: tileTypes});
+            res.render('editor',{world: world});
 
         });
 

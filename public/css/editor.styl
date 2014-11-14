@@ -1,0 +1,153 @@
+border-color = #777777
+
+
+html,body
+  padding: 0px
+  margin: 0px
+  width: 100%
+  height: 100%
+
+//************************
+//**** EDITOR WIDGET *****
+//************************
+
+.editor
+  border:1px solid border-color
+  position: fixed
+  width: 200px
+  height: 400px
+  right: 20px
+  top: 100px
+  background-color: #eeeeee
+  box-shadow: -4px 2px 8px rgba(0,0,0,0.4)
+  padding: 10px
+  box-sizing: border-box
+
+.editor_title
+  font-weight: 700px
+  text-align: center
+  font-size: 18px
+  margin: 5px 0
+
+.editor_sub
+  font-weight: 700px
+  text-align: center
+  font-size: 14px
+  margin: 3px 0
+
+.editor_filter
+  width: 100%
+  box-sizing: border-box
+  margin: 5px 0
+  border: 1px solid border-color
+  height: 20px
+  line-height: 20px
+
+.editor_tiles_section
+  border: 1px solid border-color
+  background-color: white
+  width: 100%
+  height: 150px
+  box-sizing border-box
+  padding: 3px
+
+.editor_selection_tile
+  display: inline-block
+  border: 2px solid border-color
+  width: 48px
+  height: 48px
+  background-color: white
+  box-sizing: border-box
+  margin: 2px
+
+.editor_selection_tile.editor_selected
+  border: 2px solid black
+
+.editor_selection_tile:hover
+  border: 2px solid black
+
+.editor_selection_tile_img
+  width: 100%
+  height: 100%
+
+.editor_selected_tile_section
+  padding: 10px
+
+.editor_selected_tile_img
+  display: inline-block
+  width: 48px
+  height: 48px
+  border: 2px solid black
+  background-color: white
+  vertical-align: middle
+
+.editor_selected_tile_name
+  display: inline-block
+  margin-left: 10px
+  vertical-align: middle
+  width: 90px
+  font-weight: 700
+
+.editor_actions
+  margin-top: 10px
+  text-align: center
+
+.editor_action_button
+  margin: 0 5px
+
+//************************
+//****** EDITOR MAP ******
+//************************
+
+
+.editor_map
+  line-height: 0
+  overflow: show
+  position: absolute
+  box-sizing: border-box
+
+.map
+  position: relative
+  background-color: black
+  box-sizing: border-box
+  width: 100%
+  height: 100%
+  overflow: hidden
+
+.tile
+  box-sizing: border-box
+  padding: 0
+  margin: 0
+  background-color: green
+  user-select: none
+  position: absolute
+  border: 1px solid transparent
+  overflow: visible
+
+.tile_img
+  overflow: hidden
+  width: 100%
+  height: 100%
+
+.tile.new
+  background-color: blue
+
+.tile.old
+  background-color: red
+
+.tile.building
+  background-image: url('/img/building.png')
+
+.tile:hover
+  border: 1px solid #aaa
+
+.tile.selected
+  border: 1px solid #fff
+
+.tile_position
+  position: absolute
+  color: #888
+  font-size: 10px
+  top: 24px;
+  width: 100%;
+  text-align: center;

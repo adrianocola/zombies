@@ -4,18 +4,21 @@ var express = require('express');
 var app = GLOBAL.app = express();
 var server = require('http').Server(app);
 
+//aplication base dir
+app.path = __dirname + "/../";
+
 var stylus = require('stylus');
 var nib = require('nib');
 
 //express middlewares
 var serveStatic = require('serve-static');
 var favicon = require('serve-favicon');
+var multer  = require('multer');
 
 var io = app.io = require('socket.io')(server);
 var mongoose = app.mongoose = require('mongoose');
 var grunt = require('grunt');
 var watch = require('watch');
-
 
 function compile_nib(str, path) {
     return stylus(str)
@@ -29,6 +32,7 @@ app.set('view engine', 'jade');
 
 app.engine('jade', require('jade').__express);
 
+app.use(multer());
 app.use(favicon('./public/favicon.ico'));
 app.use(stylus.middleware({ src: './public', compile: compile_nib}));
 app.use(serveStatic('./public'));

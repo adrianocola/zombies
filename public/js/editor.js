@@ -10,6 +10,17 @@ var TileModel = Backbone.Model.extend({
 
 });
 
+var TileTypeModel = Backbone.Model.extend({
+
+    idAttribute: '_id',
+
+    initialize: function(){
+
+    }
+
+
+});
+
 var TilesCollection = Backbone.Collection.extend({
     model: TileModel,
 
@@ -21,9 +32,148 @@ var TilesCollection = Backbone.Collection.extend({
 
 });
 
+var TileTypesCollection = Backbone.Collection.extend({
+    model: TileTypeModel,
+
+    url: '/api/editor/tiletypes/',
+
+    initialize: function(){
+
+    }
+
+});
 
 
-var EditorMap = Backbone.View.extend({
+var EditorView = Backbone.View.extend({
+
+    className: 'editor_view',
+
+    initialize: function(options){
+        var that = this;
+
+        this.template = JST["public/partials/editor.html"];
+        this.templateTile = JST["public/partials/editor_tile.html"];
+
+        this.tileTypes = new TileTypesCollection();
+
+        this.tileTypes.fetch({success: function(col,resp){
+            that.updateEditorTiles(col.toArray());
+            that.initilizeMap();
+        }});
+
+    },
+
+    events: {
+        'click .editor_selection_tile': 'onTileSelection',
+        'keyup .editor_filter': 'onFilter',
+        'click .editor_clear': 'onClear',
+        'click .editor_save': 'onSave'
+    },
+
+    onTileSelection: function(evt){
+        var $tile = $(evt.currentTarget);
+
+        this.$('.editor_selected').removeClass('editor_selected');
+        $tile.addClass('editor_selected');
+
+        this.$('.editor_selected_id').val($tile.attr('data-id'));
+        this.$('.editor_selected_tile_img').attr('src',$tile.find('.editor_selection_tile_img').attr('src'));
+        this.$('.editor_selected_tile_name').val($tile.attr('title'));
+
+    },
+
+    onFilter: function(evt){
+        var filter = $(evt.currentTarget).val();
+
+        if(filter){
+            var types = this.tileTypes.filter(function(type){ return type.get('name').indexOf(filter) != -1 });
+        }else{
+            var types = this.tileTypes.toArray();
+        }
+
+        this.updateEditorTiles(types);
+
+    },
+
+    onClear: function(){
+        this.$('.editor_selected_id').val('');
+        this.$('.editor_selected_tile_img').attr('src','');
+        this.$('.editor_selected_tile_name').val('');
+    },
+
+    onSave: function(){
+
+        //if doesnt have name, dont't save
+        if(!this.$('.editor_selected_tile_name').val()) return;
+
+        //if have id must change existing tile
+        if(this.$('.editor_selected_id').val()){
+
+        //must create a new tile
+        }else{
+
+        }
+    },
+
+    updateEditorTiles: function(tilesModels){
+
+        var $tilesSection = this.$('.editor_tiles_section');
+
+        $tilesSection.html('');
+
+        for(var i=0; i< tilesModels.length; i++){
+            $tilesSection.append(this.templateTile({tile: tilesModels[i].toJSON()}));
+        }
+
+    },
+
+    initilizeMap: function(){
+
+        this.editorMapView = new EditorMapView({parent: $('.map'), tileTypes: this.tileTypes});
+        $('.map').append(this.editorMapView.render().el);
+
+    },
+
+    render: function(){
+
+        var that = this;
+
+        this.$el.html(this.template());
+
+        this.uploader = new ss.SimpleUpload({
+            button: this.$('.editor_selected_tile_img'), // HTML element used as upload button
+            url: '/api/editor/upload', // URL of server-side upload handler
+            name: 'tileupload', // Parameter name of the uploaded file
+            multipart: true,
+            responseType: 'json',
+            autoSubmit: false,
+            allowedExtensions: ['png'],
+            onChange: function(file, ext, uploadBtn){
+
+                var file = $('input[name="tileupload"]')[0].files[0];
+                var $preview = that.$('.editor_selected_tile_img');
+
+                var oFReader = new FileReader();
+                oFReader.readAsDataURL(file);
+
+                oFReader.onload = function (evt) {
+                    $preview.attr('src', evt.target.result);
+                };
+
+            },
+            onSubmit: function(){
+                this.setData({})
+            }
+        });
+
+
+        return this;
+    }
+
+});
+
+
+var EditorMapView = Backbone.View.extend({
 
     className: 'editor_map',
 
@@ -34,6 +184,7 @@ var EditorMap = Backbone.View.extend({
         this.options = options || {};
 
         this.$parent = $(this.options.parent) || $('body');
+        this.tileTypes = this.options.tileTypes;
 
         this.width = this.$parent.width();
         this.height = this.$parent.height();
@@ -69,9 +220,12 @@ var EditorMap = Backbone.View.extend({
 
     addTile: function(tile){
 
+        var tileType = this.tileTypes.findWhere({_id: tile.get('type')});
+
         var editorTile = new EditorTile({
             editor: this,
-            model: tile
+            model: tile,
+            tileType: tileType
         });
         this.$el.append(editorTile.render().el);
 
@@ -132,6 +286,7 @@ var EditorTile = Backbone.View.extend({
         this.options = options || {};
 
         this.editor = this.options.editor;
+        this.tileType = this.options.tileType;
         this.x = this.model.get('pos')[0];
         this.y = this.model.get('pos')[1];
 
@@ -153,6 +308,8 @@ var EditorTile = Backbone.View.extend({
 
     render: function(){
 
+        var that = this;
+
         this.$el.attr('id', this.x + 'x' + this.y + 'y');
 
         this.$el.css({
@@ -163,7 +320,7 @@ var EditorTile = Backbone.View.extend({
         });
 
         this.$img = $('<img class="tile_img">');
-        this.$img.attr('src','/img/' + tileTypesMap[this.model.get('type')].name + '.png');
+        this.$img.attr('src','/img/tiles/' + this.tileType.get('name') + '.png');
         this.$el.append(this.$img);
 
         this.$el.append('<div class="tile_position">' + this.x + ',' + this.y + '</div>');
@@ -178,9 +335,8 @@ var EditorTile = Backbone.View.extend({
 
 $(function(){
 
-    var $map = $('.map');
-
-    var editorMap = new EditorMap({parent: $map});
-    $map.append(editorMap.render().el);
+    var $editor = $('.editor');
+    var editorView = new EditorView();
+    $editor.append(editorView.render().el);
 
 });

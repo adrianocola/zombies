@@ -73,8 +73,40 @@ app.get('/api/editor/tiles', function (req, res) {
 
     });
 
+});
+
+app.get('/api/editor/tiletypes', function (req, res) {
+
+    app.models.TileType.collection.find({}).toArray(function(err,tiletypes){
+
+        if(err) console.log(err);
+        res.json(tiletypes);
+
+    });
+
+});
 
 
+app.post('/api/editor/upload', function(req,res, next){
+
+    console.log(req.files);
+    var file = req.files.tileupload;
+
+    if(!file){
+        res.status(500).send("Erro ao realizar upload de arquivo!");
+    }
+
+    //o limite máximo é 100k para qualquer imagem
+    if(file.size > 102400){
+        return res.status(500).send("Imagem não pode ser maior que 5MB!");
+    }else if(file.mimetype != "image/png"){
+        return res.status(500).send("Só são permitidas imagens nos formato png!");
+    }
+
+
+
+
+    res.json(true);
 
 
 });
