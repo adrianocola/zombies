@@ -51,8 +51,8 @@ var EditorView = Backbone.View.extend({
     initialize: function(options){
         var that = this;
 
-        this.template = JST["public/partials/editor.html"];
-        this.templateTile = JST["public/partials/editor_tile.html"];
+        this.template = JST["public/partials/editor/editor.html"];
+        this.templateTile = JST["public/partials/editor/editor_tile.html"];
 
         this.tileTypes = new TileTypesCollection();
 

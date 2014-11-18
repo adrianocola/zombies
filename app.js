@@ -4,13 +4,11 @@ var express = require('express');
 var app = GLOBAL.app = express();
 var server = require('http').Server(app);
 
-//aplication base dir
-app.path = __dirname + "/../";
-
 var stylus = require('stylus');
 var nib = require('nib');
 
 //express middlewares
+var bodyParser = require('body-parser')
 var serveStatic = require('serve-static');
 var favicon = require('serve-favicon');
 var multer  = require('multer');
@@ -29,16 +27,19 @@ function compile_nib(str, path) {
 
 app.set('views', './protected/views');
 app.set('view engine', 'jade');
+app.locals.basedir = './protected/views';
 
-app.engine('jade', require('jade').__express);
-
+app.use(bodyParser.json());
+//app.use(bodyParser.urlencoded({ extended: true }));
 app.use(multer());
 app.use(favicon('./public/favicon.ico'));
 app.use(stylus.middleware({ src: './public', compile: compile_nib}));
 app.use(serveStatic('./public'));
+app.use(serveStatic('./assets'));
 
-var models = require('./models');
-var routes = require('./routes');
+require('./protected/services');
+require('./protected/models');
+require('./protected/routes');
 
 grunt.tasks(['default'],{},function(){});
 

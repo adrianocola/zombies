@@ -15,7 +15,12 @@ app.get('/editor', function (req, res) {
 
     });
 
+});
 
-})
+app.get('/assets_manager', function (req, res) {
+
+    res.render('assets_manager');
+
+});
 
 module.exports = require('require-directory')(module);

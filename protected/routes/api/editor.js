@@ -1,3 +1,6 @@
+var jf = require('jsonfile');
+var fs = require('fs-extra');
+
 
 app.get('/api/editor/resetWorld', function (req, res) {
 
@@ -77,11 +80,16 @@ app.get('/api/editor/tiles', function (req, res) {
 
 app.get('/api/editor/tiletypes', function (req, res) {
 
-    app.models.TileType.collection.find({}).toArray(function(err,tiletypes){
+    AssetsManager.getTileTypesList(function(err,tiles){
+        res.json(tiles);
+    });
 
-        if(err) console.log(err);
-        res.json(tiletypes);
+});
 
+app.put('/api/editor/tiletypes/:id', function (req, res) {
+
+    AssetsManager.updateTileType(null,req.body,function(err,tileType){
+        res.json(tileType);
     });
 
 });
@@ -89,7 +97,6 @@ app.get('/api/editor/tiletypes', function (req, res) {
 
 app.post('/api/editor/upload', function(req,res, next){
 
-    console.log(req.files);
     var file = req.files.tileupload;
 
     if(!file){
@@ -103,10 +110,13 @@ app.post('/api/editor/upload', function(req,res, next){
         return res.status(500).send("Só são permitidas imagens nos formato png!");
     }
 
+    delete req.query.tileupload;
+    AssetsManager.updateTileType(file,req.query,function(err,tileType){
 
+        res.json(tileType);
 
+    });
 
-    res.json(true);
 
 
 });

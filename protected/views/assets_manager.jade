@@ -1,0 +1,19 @@
+extends /templates/main
+
+block head
+   title ZombieTown Assets Manager
+
+block head_css
+   link(rel='stylesheet', href='/css/editor.css')
+
+block body_js
+   script(src="/js/vendor/simpleAjaxUploader.js")
+
+   script(src="/js/models/editorTile.js")
+   script(src="/js/models/editorTileType.js")
+
+   script(src="/js/assets_manager.js")
+
+block body
+   div.container
+      h2 Assets Manager

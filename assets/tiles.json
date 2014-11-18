@@ -1,0 +1,19 @@
+{
+  "tiles": {
+    "1": {
+      "_id": 1,
+      "name": "grass",
+      "body": true
+    },
+    "2": {
+      "_id": 2,
+      "name": "building",
+      "body": true
+    },
+    "3": {
+      "tileupload": "grass2.png",
+      "name": "road",
+      "_id": "3"
+    }
+  }
+}
