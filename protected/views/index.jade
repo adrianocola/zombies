@@ -1,63 +1,19 @@
-doctype html
-html
-   head
-      title ZombieTown!
+extends /templates/main
 
-      link(rel='stylesheet', href='/css/animate.css')
-      link(rel='stylesheet', href='/css/index.css')
+block head
+   title ZombieTown!
 
-   body
-      script(type="text/javascript").
-         var ZT = ZT || {}; //creates ZT namespace
-      script(src="/js/vendor/jquery.min.js")
-      //script(src="/js/vendor/jquery.transform2d.js")
-      //script(src="/js/vendor/underscore.min.js")
-      //script(src="/js/vendor/backbone.js")
-      //script(src="/js/vendor/velocity.min.js")
-      //script(src="/js/vendor/velocity.ui.js")
-      //script(src="/js/vendor/peps.js")
-      //script(src="/js/vendor/TweenMax.min.js")
-      script(src="/js/vendor/phaser.js")
-      script(src="/js/game/Util.js")
-      script(src="/js/game/Tile.js")
-      script(src="/js/game/Map.js")
-      script(src="/js/game/Game.js")
+block head_css
+   link(rel='stylesheet', href='/css/index.css')
 
-      script(src="/js/jst.js")
-      //script(src="/js/models/consts.js")
-      //script(src="/js/models/World.js")
-      //script(src="/js/models/Tile.js")
-      //script(src="/js/Engine.js")
-      //script(src="/js/index.js")
-      //script(src="/js/index2.js")
-      script(src="/js/index3.js")
+block body_js
+   script(type="text/javascript").
+      var ZT = ZT || {}; //creates ZT namespace
 
-      //div.map
-         - for (var x = 0; x < 121; x++)
-            div.slot(class="#{_.random(1, 4)%4?'building':''}")
-               div.thing
-                  div.zombie(class="rotate#{_.random(1, 12)}")
-               div.thing
-                  - if (x%2===0)
-                     div.zombie(class="rotate#{_.random(1, 12)}")
-               div.thing
-                  - if (x%3===0)
-                     div.zombie(class="rotate#{_.random(1, 12)}")
-               div.thing
-                  - if (x%4===0)
-                     div.zombie(class="rotate#{_.random(1, 12)}")
-               div.thing
-                  - if (x%5===0)
-                     div.zombie(class="rotate#{_.random(1, 12)}")
-               div.thing
-                  - if (x%6===0)
-                     div.zombie(class="rotate#{_.random(1, 12)}")
-               div.thing
-                  - if (x%7===0)
-                     div.zombie(class="rotate#{_.random(1, 12)}")
-               div.thing
-                  - if (x%8===0)
-                     div.zombie(class="rotate#{_.random(1, 12)}")
-               div.thing
-                  - if (x%9===0)
-                     div.zombie(class="rotate#{_.random(1, 12)}")
+   script(src="/js/vendor/phaser.js")
+   script(src="/js/game/Util.js")
+   script(src="/js/game/Tile.js")
+   script(src="/js/game/Map.js")
+   script(src="/js/game/Game.js")
+
+   script(src="/js/index3.js")

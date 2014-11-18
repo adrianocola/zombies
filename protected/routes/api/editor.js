@@ -6,10 +6,10 @@ app.get('/api/editor/resetWorld', function (req, res) {
 
     var start = new Date();
 
-    var fromX = req.query.fromX || 0;
-    var toX = req.query.toX || 0;
-    var fromY = req.query.fromY || 0;
-    var toY = req.query.toY || 0;
+    var fromX = req.query.fromX || -30;
+    var toX = req.query.toX || 30;
+    var fromY = req.query.fromY || -30;
+    var toY = req.query.toY || 30;
 
     var total = (toX - fromX + 1) * (toY - fromY + 1);
 
@@ -28,37 +28,27 @@ app.get('/api/editor/resetWorld', function (req, res) {
 
     });
 
-    app.models.TileType.findOne({name: "grass"}, function(err, defaultType) {
+    app.models.Tile.remove({}, function(err) {
 
-        if(!defaultType){
-            defaultType = new app.models.TileType({name: "grass"});
-            defaultType.save();
-        }
+        if(err) console.log(err);
 
-        app.models.Tile.remove({}, function(err) {
+        for(var x = fromX; x <= toX; x++){
+            for(var y = fromY; y <= toY; y++){
+                var slot = new app.models.Tile({
+                    pos: [x,y],
+                    type: 1
+                });
+                slot.save(function(err){
+                    if(err) console.log(err);
 
-            if(err) console.log(err);
+                    total--;
+                    if(total===0){
+                        res.send("Finalizado em: " + (new Date() - start) + "ms");
+                    }
 
-            for(var x = fromX; x <= toX; x++){
-                for(var y = fromY; y <= toY; y++){
-                    var slot = new app.models.Tile({
-                        pos: [x,y],
-                        type: defaultType
-                    });
-                    slot.save(function(err){
-                        if(err) console.log(err);
-
-                        total--;
-                        if(total===0){
-                            res.send("Finalizado em: " + (new Date() - start) + "ms");
-                        }
-
-                    });
-                }
+                });
             }
-
-        });
-
+        }
 
     });
 
@@ -75,6 +65,24 @@ app.get('/api/editor/tiles', function (req, res) {
         res.json(tiles);
 
     });
+
+});
+
+app.put('/api/editor/tiles/:id', function (req, res) {
+
+    var tile = req.body;
+
+    //prevent position update
+    delete tile.pos;
+
+    app.models.Tile.update({_id: req.param("id")},tile,function(err,updated){
+
+        if(err) console.log(err);
+
+        res.json(true);
+
+    });
+
 
 });
 

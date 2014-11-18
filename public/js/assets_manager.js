@@ -17,7 +17,7 @@ var AssetsManagerView = Backbone.View.extend({
         this.template = JST["public/partials/editor/assets.html"];
         this.templateTile = JST["public/partials/editor/tile.html"];
 
-        this.tileTypes = new EditorTileTypesCollection();
+        this.tileTypes = new TileTypesCollection();
 
         this.listenTo(this.tileTypes,'add',function(model){
             that.addEditorTile(model);
@@ -157,7 +157,7 @@ var AssetsTileView = Backbone.View.extend({
 
         this.assetsManager = this.options.assetsManager;
 
-        this.template = JST["public/partials/editor/assets_tile.html"];
+        this.template = JST["public/partials/editor/tile.html"];
 
         this.listenTo(this.model,'change',function(model){
             that.render();

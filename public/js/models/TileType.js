@@ -1,4 +1,4 @@
-var EditorTileTypeModel = Backbone.Model.extend({
+var TileTypeModel = Backbone.Model.extend({
 
     idAttribute: '_id',
 
@@ -12,8 +12,8 @@ var EditorTileTypeModel = Backbone.Model.extend({
 
 });
 
-var EditorTileTypesCollection = Backbone.Collection.extend({
-    model: EditorTileTypeModel,
+var TileTypesCollection = Backbone.Collection.extend({
+    model: TileTypeModel,
 
     url: '/api/editor/tiletypes/',
 

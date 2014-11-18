@@ -33,7 +33,7 @@ ZT.Tile.prototype.genId = function(){
 
 ZT.Tile.prototype.draw = function(){
 
-    this.sprite = this.game.phaser.make.sprite(this.worldX, this.worldY,this.y===1000?"road":"grass2");
+    this.sprite = this.game.phaser.make.sprite(this.worldX, this.worldY,this.y===1000?"road":"grass");
     this.game.backgroundLayer.add(this.sprite);
 
 

@@ -1,6 +1,6 @@
 var TileSchema = app.mongoose.Schema({
     pos: {type: [Number], index: '2d'},
-    type:{ type: app.mongoose.Schema.ObjectId, ref: 'TileType', required: true, index: true},
+    type:{ type: Number, required: true, index: true},
     face: Number // 0 = UP; 1 = RIGHT; 2 = DOWN, 3 = LEFT
 });
 

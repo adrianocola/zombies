@@ -1,5 +1,5 @@
 
-var EditorTileModel = Backbone.Model.extend({
+var TileModel = Backbone.Model.extend({
 
     idAttribute: '_id',
 
@@ -9,8 +9,8 @@ var EditorTileModel = Backbone.Model.extend({
 
 });
 
-var EditorTilesCollection = Backbone.Collection.extend({
-    model: EditorTileModel,
+var TilesCollection = Backbone.Collection.extend({
+    model: TileModel,
 
     url: '/api/editor/tiles/',
 

@@ -12,21 +12,24 @@ ZT.Game = function(options){
 
     var game = this;
 
-    var phaser = this.phaser = new Phaser.Game(this.visibleSize*this.tileSize, this.visibleSize*this.tileSize, Phaser.AUTO, 'zombietown', {
-        preload: preload,
-        create: create,
-        update: update,
-        render: render,
-        paused: function(){ phaser.paused = false;}
-    });
+    this.start = function start(){
+
+        this.phaser = new Phaser.Game(this.visibleSize*this.tileSize, this.visibleSize*this.tileSize, Phaser.AUTO, 'zombietown', {
+            preload: preload,
+            create: create,
+            update: update,
+            render: render,
+            paused: function(){ game.phaser.paused = false;}
+        });
+
+    }
 
     function preload(){
-        console.log(this);
-        game.phaser.load.image('building', 'img/building.png');
+        game.phaser.load.image('building', 'tiles/building.png');
         game.phaser.load.image('player', 'img/player2.png');
-        game.phaser.load.image('grass', 'img/grass.png');
-        game.phaser.load.image('grass2', 'img/grass2.png');
-        game.phaser.load.image('road', 'img/road.png');
+        game.phaser.load.image('grass', 'tiles/grass.png');
+        game.phaser.load.image('grass2', 'tiles/grass2.png');
+        game.phaser.load.image('road', 'tiles/road.png');
         game.phaser.load.spritesheet('walking', 'img/walking.png', 16, 16, 4);
     }
 
