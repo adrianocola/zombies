@@ -6,7 +6,9 @@ ZT.Tile = function(options){
     this.id = this.genId();
 
     this.game = this.options.game;
+    this.tileModel = this.options.tileModel;
     this.sprite = this.options.sprite;
+    this.shadow = this.options.shadow;
     this.x = this.options.x;
     this.y = this.options.y;
     this.realX = this.options.realX;
@@ -33,9 +35,32 @@ ZT.Tile.prototype.genId = function(){
 
 ZT.Tile.prototype.draw = function(){
 
-    this.sprite = this.game.phaser.make.sprite(this.worldX, this.worldY,this.y===1000?"road":"grass");
-    this.game.backgroundLayer.add(this.sprite);
+    var tileType = this.game.tileTypes.get(this.tileModel.get('type'));
+    var tileTypeName = tileType.get("name");
 
+    if(tileType.get("shadow")){
+        this.shadow = this.game.phaser.make.sprite(this.worldX-2, this.worldY-2, tileTypeName);
+        this.shadow.tint = 0x000000;
+        this.shadow.alpha = 1;
+        this.game.shadowLayer.add(this.shadow);
+    }
+    this.sprite = this.game.phaser.make.sprite(this.worldX, this.worldY,tileTypeName);
+
+    if(tileType.get("body")){
+        this.game.phaser.physics.arcade.enable(this.sprite,Phaser.Physics.ARCADE);
+        this.sprite.body.immovable = true;
+        this.game.constructionLayer.add(this.sprite);
+    }else{
+        this.game.backgroundLayer.add(this.sprite);
+    }
+
+    if(this.width != tileType.get('width') || this.height != tileType.get('height')){
+        if(this.shadow){
+            this.shadow.scale.setTo(this.width/tileType.get('width'),this.height/tileType.get('height'));
+        }
+        this.sprite.scale.setTo(this.width/tileType.get('width'),this.height/tileType.get('height'));
+
+    }
 
     //this.box = this.game.phaser.make.graphics();
     //this.box.lineStyle(1, 0x888888, 1);
@@ -43,8 +68,8 @@ ZT.Tile.prototype.draw = function(){
     //this.box.drawRect(this.worldX, this.worldY, this.width, this.height);
     //this.game.backgroundLayer.add(this.box);
 
-    //this.text = this.game.phaser.make.text(this.worldX + 8, this.worldY + 16, this.x + ',' + this.y, {font: "7pt Arial", fill: "#FFFFFF"});
-    //this.game.backgroundLayer.add(this.text);
+    //this.text = this.game.phaser.make.text(this.worldX + 8, this.worldY + 16, this.realX + ',' + this.realY, {font: "7pt Arial", fill: "#FFFFFF"});
+    //this.game.hudLayer.add(this.text);
 
 }
 

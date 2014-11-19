@@ -76,7 +76,9 @@ var AssetsManagerView = Backbone.View.extend({
         if(!name) return;
 
         if(!_id || newimg){
-            this.uploader.setData({name: name, _id: _id});
+
+            var img = document.getElementById('assets_selected_tile_img');
+            this.uploader.setData({name: name, _id: _id, width: img.naturalWidth, height: img.naturalHeight});
             this.uploader.submit();
         }else{
             var tileModel = this.tileTypes.get(_id);

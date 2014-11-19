@@ -57,12 +57,26 @@ app.get('/api/editor/resetWorld', function (req, res) {
 
 app.get('/api/editor/tiles', function (req, res) {
 
-    var req_tiles = JSON.parse(req.query.tiles) || [];
+    var query = {};
 
-    app.models.Tile.collection.find({pos: {$in: req_tiles }}).toArray(function(err,tiles){
+    if(req.query.tiles){
+        query.pos =  {$in: JSON.parse(req.query.tiles) };
+    }else{
+        var fromX = parseInt(req.query.fromX) || -10;
+        var toX = parseInt(req.query.toX) || 10;
+        var fromY = parseInt(req.query.fromY) || -10;
+        var toY = parseInt(req.query.toY) || 10;
 
+        query.pos = {
+            $geoWithin : {
+                $box : [[fromX, fromY], [toX, toY]]
+            }
+        }
+    }
+
+    app.models.Tile.collection.find(query).toArray(function(err,tiles){
         if(err) console.log(err);
-        res.json(tiles);
+        //res.json(tiles);
 
     });
 

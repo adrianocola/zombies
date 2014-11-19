@@ -10,26 +10,38 @@ ZT.Game = function(options){
     this.width = this.totalSize*this.tileSize;
     this.height = this.totalSize*this.tileSize;
 
+    this.tileTypes = new TileTypesCollection();
+
     var game = this;
 
+    //start point
     this.start = function start(){
 
-        this.phaser = new Phaser.Game(this.visibleSize*this.tileSize, this.visibleSize*this.tileSize, Phaser.AUTO, 'zombietown', {
+        this.tileTypes.fetch({success: function(col,resp){
+            boot();
+        }});
+
+    }
+
+    function boot(){
+        game.phaser = new Phaser.Game(game.visibleSize*game.tileSize, game.visibleSize*game.tileSize, Phaser.AUTO, 'zombietown', {
             preload: preload,
             create: create,
             update: update,
             render: render,
             paused: function(){ game.phaser.paused = false;}
         });
-
     }
 
     function preload(){
-        game.phaser.load.image('building', 'tiles/building.png');
+
+        //load tileTypes
+        for(var i=0; i<game.tileTypes.length;i++){
+            var tileType = game.tileTypes.at(i);
+            game.phaser.load.image(tileType.get('name'), tileType.tileImgPath());
+        }
+
         game.phaser.load.image('player', 'img/player2.png');
-        game.phaser.load.image('grass', 'tiles/grass.png');
-        game.phaser.load.image('grass2', 'tiles/grass2.png');
-        game.phaser.load.image('road', 'tiles/road.png');
         game.phaser.load.spritesheet('walking', 'img/walking.png', 16, 16, 4);
     }
 
@@ -40,9 +52,11 @@ ZT.Game = function(options){
         game.phaser.world.setBounds(-game.width/2 + game.tileSize/2 ,-game.height/2 + game.tileSize/2,game.width,game.height);
 
         game.backgroundLayer = game.phaser.add.group();
+        game.shadowLayer = game.phaser.add.group();
+        game.constructionLayer = game.phaser.add.group();
         game.hudLayer = game.phaser.add.group();
 
-        game.phaser.stage.backgroundColor = '#008000';
+        game.phaser.stage.backgroundColor = '#000000';
 
         game.map = new ZT.Map({
             game: game,
@@ -96,7 +110,7 @@ ZT.Game = function(options){
 
         game.phaser.input.onDown.add(function(){
             var markerTile = game.map.getTileWorldXY(game.marker.x,game.marker.y);
-            if(markerTile) console.log(markerTile.x + "," + markerTile.y);
+            //if(markerTile) console.log(markerTile.x + "," + markerTile.y);
 
 
             var playerTile;
@@ -120,13 +134,13 @@ ZT.Game = function(options){
         game.phaser.camera.y = -game.height/4 + game.tileSize/4;
 
         game.phaser.camera.follow(game.player);
-        game.phaser.camera.deadzone = new Phaser.Rectangle(game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.2, game.visibleSize*game.tileSize*0.2);
+        //game.phaser.camera.deadzone = new Phaser.Rectangle(game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.2, game.visibleSize*game.tileSize*0.2);
     }
 
     function update(){
 
         //if colided with background
-        game.phaser.physics.arcade.collide(game.player, game.backgroundLayer, function(){
+        game.phaser.physics.arcade.collide(game.player, game.constructionLayer, function(){
 
         }, null, this);
 
@@ -164,7 +178,7 @@ ZT.Game = function(options){
     }
 
     function render(){
-        //game.phaser.debug.cameraInfo(phaser.camera, this.tileSize, this.tileSize);
+        //game.phaser.debug.cameraInfo(game.phaser.camera, game.tileSize, game.tileSize);
     }
 
 }
