@@ -75,19 +75,6 @@ ZT.Game = function(options){
         game.marker.drawRect(0, 0, game.tileSize, game.tileSize);
         game.hudLayer.add(game.marker);
 
-        game.shadow = game.phaser.make.sprite(96, 96, 'building');
-        game.shadow.tint = 0x000000;
-        game.shadow.alpha = 0.6;
-        game.shadow.scale.setTo(0.70, 0.70);
-        game.backgroundLayer.add(game.shadow);
-
-        game.building = game.phaser.make.sprite(98,98, 'building');
-        game.phaser.physics.arcade.enable(game.building,Phaser.Physics.ARCADE);
-        game.building.body.immovable = true;
-        game.building.scale.setTo(0.72, 0.72);
-        game.backgroundLayer.add(game.building);
-
-
         game.playerShadow = game.phaser.add.sprite(game.tileSize/2 -2, game.tileSize/2 -2, 'walking');
         game.playerShadow.tint = 0x000000;
         game.playerShadow.alpha = 0.6;

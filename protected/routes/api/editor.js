@@ -76,8 +76,7 @@ app.get('/api/editor/tiles', function (req, res) {
 
     app.models.Tile.collection.find(query).toArray(function(err,tiles){
         if(err) console.log(err);
-        //res.json(tiles);
-
+        res.json(tiles);
     });
 
 });
