@@ -60,16 +60,21 @@ app.use(bodyParser.json());
 app.use(multer());
 app.use(favicon('./public/favicon.ico'));
 app.use(stylus.middleware({ src: './public', compile: compile_nib}));
+app.use(serveStatic('./shared'));
 app.use(serveStatic('./public'));
 app.use(serveStatic('./assets'));
 
+//**********
+//  SHARED
+//**********
+app.shared = require('./shared');
 
 //**********
 //    APP
 //**********
-require('./protected/services');
-require('./protected/models');
-require('./protected/routes');
+app.services = require('./protected/services');
+app.models = require('./protected/models');
+app.routes = require('./protected/routes');
 
 //**********
 // SOCKET.io

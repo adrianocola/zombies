@@ -6,4 +6,4 @@ var WorldSchema = app.mongoose.Schema({
     left: Number
 });
 
-app.models.World = app.mongoose.model('World', WorldSchema);
+module.exports = app.mongoose.model('World', WorldSchema);

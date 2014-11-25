@@ -5,6 +5,9 @@ html
       meta(http-equiv="X-UA-Compatible",content="IE=edge")
       meta(name="viewport",content="width=device-width, initial-scale=1")
 
+      script(type="text/javascript").
+         var ZT = ZT || {}; //creates ZT namespace
+
       block head
 
       link(rel='stylesheet', href='/css/vendor/bootstrap.css')
@@ -13,6 +16,8 @@ html
       block head_css
 
    body
+
+      //PUBLIC
       script(src="/js/vendor/jquery.min.js")
       script(src="/js/vendor/underscore.js")
       script(src="/js/vendor/backbone.js")
@@ -24,6 +29,9 @@ html
       script(src="/js/models/TileType.js")
 
       script(src="/js/jst.js")
+
+      //SHARED
+      script(src="/lib/MapLogic.js")
 
       script(type="text/javascript").
          var socket = io('http://localhost');

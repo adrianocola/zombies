@@ -19,8 +19,6 @@ ZT.Map = function(options){
     this.firstY = -Math.floor(this.width/2);
     this.lastY = Math.floor(this.width/2);
 
-
-
     this.tiles = {};
 
     this.tilesModels = new TilesCollection();
@@ -37,14 +35,8 @@ ZT.Map = function(options){
     }});
 
     this.tilesModels.on('add',function(tileModel){
-        that.addTile2(tileModel);
+        that.addTile(tileModel);
     });
-
-    //for(var x = this.firstX; x<=this.lastX; x++){
-    //    for(var y = this.firstY; y<=this.lastY; y++){
-    //        this.addTile(x,y);
-    //    }
-    //}
 
 }
 
@@ -60,7 +52,7 @@ ZT.Map.prototype.getTileWorldXY = function(worldX, worldY){
 
 }
 
-ZT.Map.prototype.addTile2 = function(tileModel){
+ZT.Map.prototype.addTile = function(tileModel){
 
     var x,y;
     if(this.centerTile){
@@ -90,26 +82,6 @@ ZT.Map.prototype.addTile2 = function(tileModel){
 
     return tile;
 
-}
-
-ZT.Map.prototype.addTile = function(x,y){
-    var tile = new ZT.Tile({
-        game: this.game,
-        x: x,
-        y: y,
-        worldX: x * this.tileWidth + this.centerWorldX,
-        worldY: y * this.tileHeight + this.centerWorldY,
-        realX: x + this.realCenterX,
-        realY: y + this.realCenterY,
-        width: this.tileWidth,
-        height: this.tileHeight
-    });
-
-    tile.draw();
-
-    this.tiles[x + ":" + y] = tile;
-
-    return tile;
 }
 
 ZT.Map.prototype.move = function(moveX, moveY){

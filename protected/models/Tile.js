@@ -4,4 +4,4 @@ var TileSchema = app.mongoose.Schema({
     face: Number // 0 = UP; 1 = RIGHT; 2 = DOWN, 3 = LEFT
 });
 
-app.models.Tile = app.mongoose.model('Tile', TileSchema);
+module.exports = app.mongoose.model('Tile', TileSchema);

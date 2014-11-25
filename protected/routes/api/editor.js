@@ -101,7 +101,7 @@ app.put('/api/editor/tiles/:id', function (req, res) {
 
 app.get('/api/editor/tiletypes', function (req, res) {
 
-    AssetsManager.getTileTypesList(function(err,tiles){
+    app.services.AssetsManager.getTileTypesList(function(err,tiles){
         res.json(tiles);
     });
 
@@ -109,7 +109,7 @@ app.get('/api/editor/tiletypes', function (req, res) {
 
 app.put('/api/editor/tiletypes/:id', function (req, res) {
 
-    AssetsManager.updateTileType(null,req.body,function(err,tileType){
+    app.services.AssetsManager.updateTileType(null,req.body,function(err,tileType){
         res.json(tileType);
     });
 
@@ -132,7 +132,7 @@ app.post('/api/editor/upload', function(req,res, next){
     }
 
     delete req.query.tileupload;
-    AssetsManager.updateTileType(file,req.query,function(err,tileType){
+    app.services.AssetsManager.updateTileType(file,req.query,function(err,tileType){
 
         res.json(tileType);
 
