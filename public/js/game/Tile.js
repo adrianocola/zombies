@@ -47,9 +47,25 @@ ZT.Tile.prototype.draw = function(){
     this.sprite = this.game.phaser.make.sprite(this.worldX, this.worldY,tileTypeName);
 
     if(tileType.get("body")){
+        var that = this;
         this.game.phaser.physics.arcade.enable(this.sprite,Phaser.Physics.ARCADE);
-        this.sprite.body.immovable = true;
+        //
         this.game.constructionLayer.add(this.sprite);
+
+        if(tileType.get("body")==="rigid"){
+            this.sprite.body.immovable = true;
+        }else if(tileType.get("body")!=="rigid"){
+            //if you should move body to its original position after moving it
+            this.sprite.update = function(){
+                if(Math.abs(this.x - that.worldX) > 2 || Math.abs(this.y - that.worldY) > 2){
+                    that.game.phaser.physics.arcade.moveToXY(this, that.worldX, that.worldY, 40);
+                }else{
+                    this.body.velocity.x = 0;
+                    this.body.velocity.y = 0;
+                }
+            }
+        }
+
     }else{
         this.game.backgroundLayer.add(this.sprite);
     }

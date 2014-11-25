@@ -1,15 +1,15 @@
 {
   "tiles": {
     "1": {
-      "_id": 1,
+      "_id": "1",
       "name": "grass",
-      "width": "48",
-      "height": "48"
+      "width": "96",
+      "height": "96"
     },
     "2": {
       "_id": "2",
       "name": "building",
-      "body": true,
+      "body": "rigid",
       "shadow": true,
       "width": "64",
       "height": "64"

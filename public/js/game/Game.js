@@ -24,16 +24,31 @@ ZT.Game = function(options){
     }
 
     function boot(){
-        game.phaser = new Phaser.Game(game.visibleSize*game.tileSize, game.visibleSize*game.tileSize, Phaser.AUTO, 'zombietown', {
-            preload: preload,
-            create: create,
-            update: update,
-            render: render,
-            paused: function(){ game.phaser.paused = false;}
-        });
+
+        var game_config = {
+            width: game.visibleSize*game.tileSize,
+            height: game.visibleSize*game.tileSize,
+            renderer: Phaser.AUTO,
+            parent: 'zombietown',
+            state:  {
+                preload: preload,
+                create: create,
+                update: update,
+                render: render,
+                pause: function(){
+                    console.log("PPP");
+                }
+            },
+            forceSetTimeOut: true
+        }
+
+        game.phaser = new Phaser.Game(game_config);
+
     }
 
     function preload(){
+
+        game.phaser.raf.forceSetTimeOut = true;
 
         //load tileTypes
         for(var i=0; i<game.tileTypes.length;i++){
@@ -43,9 +58,31 @@ ZT.Game = function(options){
 
         game.phaser.load.image('player', 'img/player2.png');
         game.phaser.load.spritesheet('walking', 'img/walking.png', 16, 16, 4);
+
+
+        //to calc FPS
+        game.phaser.time.advancedTiming = true;
+        //force the game to work with 1 FPS in inactive tabs
+        game.phaser.time.timeCap = 1000;
+        game.phaser.time.deltaCap = 1000;
+
     }
 
     function create(){
+
+        game.phaser.onBlur.add(function(){
+            game.isPaused = true;
+        },this);
+        //
+        game.phaser.onFocus.add(function(){
+            game.isPaused = false;
+        },this);
+
+        game.phaser.onPause.add(function(){},this);
+
+        game.phaser.onResume.add(function(){},this);
+
+        game.phaser.stage.disableVisibilityChange = true;
 
         game.phaser.physics.startSystem(Phaser.Physics.ARCADE);
 
@@ -97,8 +134,6 @@ ZT.Game = function(options){
 
         game.phaser.input.onDown.add(function(){
             var markerTile = game.map.getTileWorldXY(game.marker.x,game.marker.y);
-            //if(markerTile) console.log(markerTile.x + "," + markerTile.y);
-
 
             var playerTile;
             if(game.player.target){
@@ -121,22 +156,34 @@ ZT.Game = function(options){
         game.phaser.camera.y = -game.height/4 + game.tileSize/4;
 
         game.phaser.camera.follow(game.player);
-        //game.phaser.camera.deadzone = new Phaser.Rectangle(game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.2, game.visibleSize*game.tileSize*0.2);
+        game.phaser.camera.deadzone = new Phaser.Rectangle(game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.2, game.visibleSize*game.tileSize*0.2);
+
     }
 
     function update(){
 
-        //if colided with background
         game.phaser.physics.arcade.collide(game.player, game.constructionLayer, function(){
 
         }, null, this);
 
+        game.phaser.physics.arcade.collide(game.constructionLayer, game.constructionLayer, function(){
+
+        }, null, this);
+
         if(game.player.target){
+            //console.log("Y: " + (game.player.y));
             game.player.rotate = game.phaser.physics.arcade.moveToXY(game.player, game.player.target.x, game.player.target.y, 100);
             game.playerShadow.angle = game.player.angle;
             game.playerShadow.x = game.player.x -1;
             game.playerShadow.y = game.player.y -1 ;
             if( Math.abs(game.player.target.x - game.player.x) < 5 && Math.abs(game.player.target.y - game.player.y) < 5){
+
+                game.player.x = game.player.target.x;
+                game.player.y = game.player.target.y;
+
+                game.playerShadow.x = game.player.x -1;
+                game.playerShadow.y = game.player.y -1 ;
+
                 delete game.player.target;
                 game.player.body.velocity.x = 0;
                 game.player.body.velocity.y = 0;
@@ -166,6 +213,7 @@ ZT.Game = function(options){
 
     function render(){
         //game.phaser.debug.cameraInfo(game.phaser.camera, game.tileSize, game.tileSize);
+        game.phaser.debug.text(game.phaser.time.fps || '--', 2, 14, "#00ff00");
     }
 
 }

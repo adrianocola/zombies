@@ -74,7 +74,11 @@ require('./protected/routes');
 //**********
 // SOCKET.io
 //**********
-app.io = require('socket.io')(server);
+var io = app.io = require('socket.io')(server);
+
+io.on('connection', function (socket) {
+
+});
 
 //**********
 //  GRUNT

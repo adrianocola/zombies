@@ -18,10 +18,15 @@ html
       script(src="/js/vendor/backbone.js")
       script(src="/js/vendor/bootstrap.js")
 
+      script(src="/socket.io/socket.io.js")
+
       script(src="/js/models/Tile.js")
       script(src="/js/models/TileType.js")
 
       script(src="/js/jst.js")
+
+      script(type="text/javascript").
+         var socket = io('http://localhost');
 
       block body_js
 
