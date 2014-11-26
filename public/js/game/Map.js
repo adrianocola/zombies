@@ -1,3 +1,15 @@
+/**
+ * Map is centered on the player and rebuilds itself
+ * when player moves. I will add and remove tiles to
+ * always keep the player in the middle of the map.
+ *
+ * There is a correlation with the real map center, but
+ * the map tries to work relative to player position
+ * (as if the player was always at position 0,0 )
+ *
+ * @param options
+ * @constructor
+ */
 ZT.Map = function(options){
     var that = this;
 
@@ -24,10 +36,10 @@ ZT.Map = function(options){
     this.tilesModels = new TilesCollection();
 
     var fetchData = {
-        fromX: this.firstX,
-        toX: this.lastX,
-        fromY: this.firstY,
-        toY: this.lastY
+        fromX: this.firstX + this.realCenterX,
+        toX: this.lastX + this.realCenterX,
+        fromY: this.firstY + this.realCenterY,
+        toY: this.lastY + this.realCenterY
     }
 
     this.tilesModels.fetch({data: fetchData, success: function(){

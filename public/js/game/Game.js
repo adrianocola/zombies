@@ -11,14 +11,27 @@ ZT.Game = function(options){
     this.height = this.totalSize*this.tileSize;
 
     this.tileTypes = new TileTypesCollection();
+    this.playerModel = new PlayerModel();
 
     var game = this;
 
     //start point
     this.start = function start(){
 
+        var count = 2;
+        var loaded = function(){
+            count--;
+            if(count <= 0){
+                boot();
+            }
+        }
+
         this.tileTypes.fetch({success: function(col,resp){
-            boot();
+            loaded();
+        }});
+
+        this.playerModel.fetch({success: function(model,resp){
+            loaded();
         }});
 
     }
@@ -95,16 +108,17 @@ ZT.Game = function(options){
 
         game.phaser.stage.backgroundColor = '#000000';
 
+        console.log(game.playerModel);
         game.map = new ZT.Map({
             game: game,
             width: game.totalSize,
             height: game.totalSize,
             tileWidth: game.tileSize,
             tileHeight: game.tileSize,
-            centerWorldX: 0,
-            centerWorldY: 0,
-            realCenterX: 0,
-            realCenterY: 0
+            centerWorldX: -game.tileSize * game.playerModel.x,
+            centerWorldY: -game.tileSize * game.playerModel.y,
+            realCenterX: game.playerModel.x,
+            realCenterY: game.playerModel.y
         });
 
         game.marker = game.phaser.make.graphics();
@@ -155,8 +169,8 @@ ZT.Game = function(options){
         game.phaser.camera.x = -game.width/4 + game.tileSize/4;
         game.phaser.camera.y = -game.height/4 + game.tileSize/4;
 
-        game.phaser.camera.follow(game.player);
-        game.phaser.camera.deadzone = new Phaser.Rectangle(game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.2, game.visibleSize*game.tileSize*0.2);
+        //game.phaser.camera.follow(game.player);
+        //game.phaser.camera.deadzone = new Phaser.Rectangle(game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.2, game.visibleSize*game.tileSize*0.2);
 
     }
 

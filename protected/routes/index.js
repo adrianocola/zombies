@@ -1,6 +1,33 @@
 
 app.get('/', function (req, res) {
-    res.render('index');
+
+    var name = req.param("name") || "default";
+
+    if(req.session.player && req.session.player.name !== name){
+        req.session.regenerate(function(err){});
+    }
+
+    app.models.Player.findOne({name: name},function(err, player){
+
+        if(!player){
+
+            player = new app.models.Player({
+                name: name,
+                pos: [0,0]
+            });
+            player.save(function(err){});
+
+        }
+
+        req.session.player = player;
+
+        res.render('index');
+
+    });
+
+
+
+
 })
 
 app.get('/map_editor', function (req, res) {
