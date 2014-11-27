@@ -154,23 +154,31 @@ ZT.Map.prototype.move = function(moveX, moveY){
     this.realCenterX = this.centerTile.realX;
     this.realCenterY = this.centerTile.realY;
 
-    new_tiles = [];
+    //new_tiles = [];
+    //
+    //for(var x = 0; x < absX; x++){
+    //    var mapX = isRight?this.lastX-x:this.firstX+x;
+    //    for(var y = this.firstY; y <= this.lastY; y++){
+    //        new_tiles.push([this.realCenterX + mapX,this.realCenterY + y]);
+    //    }
+    //}
+    //
+    //for(var y = 0; y < absY; y++){
+    //    var mapY = isBottom?this.lastY-y:this.firstY+y;
+    //    for(var x = this.firstX; x <= this.lastX; x++){
+    //        new_tiles.push([this.realCenterX + x,this.realCenterY + mapY]);
+    //    }
+    //}
+    //this.tilesModels.fetchTiles(new_tiles);
 
-    for(var x = 0; x < absX; x++){
-        var mapX = isRight?this.lastX-x:this.firstX+x;
-        for(var y = this.firstY; y <= this.lastY; y++){
-            new_tiles.push([this.realCenterX + mapX,this.realCenterY + y]);
-        }
+    var fetchData = {
+        fromX: this.firstX + this.realCenterX,
+        toX: this.lastX + this.realCenterX,
+        fromY: this.firstY + this.realCenterY,
+        toY: this.lastY + this.realCenterY
     }
 
-    for(var y = 0; y < absY; y++){
-        var mapY = isBottom?this.lastY-y:this.firstY+y;
-        for(var x = this.firstX; x <= this.lastX; x++){
-            new_tiles.push([this.realCenterX + x,this.realCenterY + mapY]);
-        }
-    }
-
-    this.tilesModels.fetchTiles(new_tiles);
+    this.tilesModels.fetch({data: fetchData});
 
 }
 

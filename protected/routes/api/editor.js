@@ -1,17 +1,23 @@
-var jf = require('jsonfile');
-var fs = require('fs-extra');
+var async = require('async');
 
 
 app.get('/api/editor/resetWorld', function (req, res) {
 
+    res.writeHead(200, {
+        'Content-Type': 'text/html'
+        , 'Transfer-Encoding': 'chunked'
+    });
+
     var start = new Date();
 
-    var fromX = req.query.fromX || -30;
-    var toX = req.query.toX || 30;
-    var fromY = req.query.fromY || -30;
-    var toY = req.query.toY || 30;
+    var fromX = parseInt(req.query.fromX || -30);
+    var toX = parseInt(req.query.toX || 30);
+    var fromY = parseInt(req.query.fromY || -30);
+    var toY = parseInt(req.query.toY || 30);
 
     var total = (toX - fromX + 1) * (toY - fromY + 1);
+
+    res.write("Creating " + total + " tiles<br>");
 
     app.models.World.findOne({name: "zombietown"}, function(err, world) {
 
@@ -28,27 +34,61 @@ app.get('/api/editor/resetWorld', function (req, res) {
 
     });
 
-    app.models.Tile.remove({}, function(err) {
+    res.write("Reseting DB...<br>");
+
+    app.models.Tile.remove({},function(err) {
 
         if(err) console.log(err);
 
-        for(var x = fromX; x <= toX; x++){
-            for(var y = fromY; y <= toY; y++){
-                var slot = new app.models.Tile({
-                    pos: [x,y],
-                    type: 1
-                });
-                slot.save(function(err){
-                    if(err) console.log(err);
+        var count = 0;
+        var nextPerc = 1;
 
-                    total--;
-                    if(total===0){
-                        res.send("Finalizado em: " + (new Date() - start) + "ms");
-                    }
+        res.write("Adding Tiles...<br>");
 
-                });
+        var ping = setInterval(function(){
+            res.write('<span></span>');
+        },30000);
+
+        var slot;
+        var x = fromX;
+        var y = fromY;
+
+        async.whilst(function(){
+            return x < toX || y < toY;
+        },function(done){
+
+            slot = new app.models.Tile({
+                pos: [x, y],
+                type: 1
+            });
+            slot.save(done);
+
+            count++;
+
+            if(Math.floor(100*count/total) === nextPerc){
+                if(nextPerc%10 === 0){
+                    res.write(nextPerc + "%");
+                }else{
+                    res.write(".");
+                }
+
+                nextPerc++;
             }
-        }
+
+            y++;
+
+            if(y>toY){
+                x++;
+                y=fromY;
+            }
+
+        },function(err){
+            if(err) console.log(err);
+
+            clearInterval(ping);
+            res.write("<br><br>Finished in : " + (new Date() - start) + "ms");
+            res.end();
+        });
 
     });
 
@@ -56,6 +96,8 @@ app.get('/api/editor/resetWorld', function (req, res) {
 
 
 app.get('/api/editor/tiles', function (req, res) {
+
+    var start = new Date();
 
     var query = {};
 
@@ -76,6 +118,7 @@ app.get('/api/editor/tiles', function (req, res) {
 
     app.models.Tile.collection.find(query).toArray(function(err,tiles){
         if(err) console.log(err);
+        console.log("Fetched " + tiles.length + " documents in " + (new Date() - start) + "ms");
         res.json(tiles);
     });
 
@@ -121,14 +164,14 @@ app.post('/api/editor/upload', function(req,res, next){
     var file = req.files.tileupload;
 
     if(!file){
-        res.status(500).send("Erro ao realizar upload de arquivo!");
+        res.status(500).send("Error when uploading file!");
     }
 
     //o limite máximo é 100k para qualquer imagem
     if(file.size > 102400){
-        return res.status(500).send("Imagem não pode ser maior que 5MB!");
+        return res.status(500).send("Image size must be lower than 5Mb!");
     }else if(file.mimetype != "image/png"){
-        return res.status(500).send("Só são permitidas imagens nos formato png!");
+        return res.status(500).send("Only .png files allowed!");
     }
 
     delete req.query.tileupload;
