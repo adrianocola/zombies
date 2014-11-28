@@ -35,14 +35,12 @@ ZT.Map = function(options){
 
     this.tilesModels = new TilesCollection();
 
-    var fetchData = {
-        fromX: this.firstX + this.realCenterX,
-        toX: this.lastX + this.realCenterX,
-        fromY: this.firstY + this.realCenterY,
-        toY: this.lastY + this.realCenterY
-    }
+    var fetchRect = [
+        [ this.firstX + this.realCenterX, this.firstY + this.realCenterY ],
+        [ this.lastX + this.realCenterX , this.lastY + this.realCenterY]
+    ]
 
-    this.tilesModels.fetch({data: fetchData, success: function(){
+    this.tilesModels.fetchInRect(fetchRect,{success: function(){
         that.centerTile = that.tiles[0 + ":" + 0];
     }});
 
@@ -100,8 +98,6 @@ ZT.Map.prototype.move = function(moveX, moveY){
 
     if(!moveX && !moveY) return;
 
-    var that = this;
-
     var absX = Math.abs(moveX);
     var absY = Math.abs(moveY);
 
@@ -154,31 +150,31 @@ ZT.Map.prototype.move = function(moveX, moveY){
     this.realCenterX = this.centerTile.realX;
     this.realCenterY = this.centerTile.realY;
 
-    //new_tiles = [];
-    //
-    //for(var x = 0; x < absX; x++){
-    //    var mapX = isRight?this.lastX-x:this.firstX+x;
-    //    for(var y = this.firstY; y <= this.lastY; y++){
-    //        new_tiles.push([this.realCenterX + mapX,this.realCenterY + y]);
-    //    }
-    //}
-    //
-    //for(var y = 0; y < absY; y++){
-    //    var mapY = isBottom?this.lastY-y:this.firstY+y;
-    //    for(var x = this.firstX; x <= this.lastX; x++){
-    //        new_tiles.push([this.realCenterX + x,this.realCenterY + mapY]);
-    //    }
-    //}
-    //this.tilesModels.fetchTiles(new_tiles);
+    if(moveX){
 
-    var fetchData = {
-        fromX: this.firstX + this.realCenterX,
-        toX: this.lastX + this.realCenterX,
-        fromY: this.firstY + this.realCenterY,
-        toY: this.lastY + this.realCenterY
+        var x = isRight?this.lastX:this.firstX;
+        var topLeft1 = [this.realCenterX  + x - moveX +1, this.firstY-moveY + this.realCenterY];
+        var bottomRight1 = [this.realCenterX + x, this.lastY-moveY + this.realCenterY];
+    }
+    if(moveY){
+        var y = isBottom?this.lastY:this.firstY;
+        var topLeft2 = [this.firstX-moveX + this.realCenterX, this.realCenterY + y - moveY + 1];
+        var bottomRight2 = [this.lastX-moveX + this.realCenterX, this.realCenterY + y];
     }
 
-    this.tilesModels.fetch({data: fetchData});
+    if(moveX && moveY){
+        //in case of a diagonal move adjust the rects
+        topLeft1[1] += moveY;
+        bottomRight1[1] += moveY;
+        topLeft2[0] += moveX;
+        bottomRight2[0] += moveX;
+
+        this.tilesModels.fetchInTwoRects([ topLeft1, bottomRight1 ], [ topLeft2 ,bottomRight2 ]);
+    }else if(moveX){
+        this.tilesModels.fetchInRect([ topLeft1, bottomRight1 ]);
+    }else if(moveY) {
+        this.tilesModels.fetchInRect([topLeft2, bottomRight2]);
+    }
 
 }
 

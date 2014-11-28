@@ -101,18 +101,53 @@ app.get('/api/editor/tiles', function (req, res) {
 
     var query = {};
 
-    if(req.query.tiles){
-        query.pos =  {$in: JSON.parse(req.query.tiles) };
-    }else{
-        var fromX = parseInt(req.query.fromX) || -10;
-        var toX = parseInt(req.query.toX) || 10;
-        var fromY = parseInt(req.query.fromY) || -10;
-        var toY = parseInt(req.query.toY) || 10;
-
+    if(req.param('rect')){
         query.pos = {
             $geoWithin : {
-                $box : [[fromX, fromY], [toX, toY]]
+                $box : JSON.parse(req.param('rect'))
             }
+        }
+    }else if(req.param('rect1') && req.param('rect2')){
+        query.$or = [
+            {
+                pos: {
+                    $geoWithin: {
+                        $box: JSON.parse(req.param('rect1'))
+                    }
+                }
+            },
+            {
+                pos: {
+                    $geoWithin: {
+                        $box: JSON.parse(req.param('rect2'))
+                    }
+                }
+            }
+        ]
+    }else if(req.param('point')){
+        var point = JSON.parse(req.param('point'));
+        query.pos = {
+            $geoWithin : {
+                $box : [point, point]
+            }
+        }
+
+    //poor performance! use rect when possible!
+    }else if(req.param('points')){
+        query.$or = [];
+
+        var points = JSON.parse(req.query.points);
+
+        for(var i=0; i<points.length; i++){
+            query.$or.push(
+                {
+                    pos: {
+                        $geoWithin: {
+                            $box : [points[i], points[i]]
+                        }
+                    }
+                }
+            );
         }
     }
 

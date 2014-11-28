@@ -173,7 +173,10 @@ var EditorMapView = Backbone.View.extend({
         this.firstTileX = 0;
         this.lastTileX = Math.floor(this.width/this.tileWidth);
         this.firstTileY = 0;
-        this.lastTileY = Math.floor(this.height/this.tileHeight)
+        this.lastTileY = Math.floor(this.height/this.tileHeight);
+
+        this.realCenterX = 0;
+        this.realCenterY = 0;
 
 
         this.tilesCollection = new TilesCollection();
@@ -265,7 +268,7 @@ var EditorMapView = Backbone.View.extend({
 
     fetchTiles: function(tiles){
 
-        this.tilesCollection.fetch({data: {tiles: JSON.stringify(tiles)}, remove: false});
+        this.tilesCollection.fetch({data: {points: JSON.stringify(tiles)}, remove: false});
 
     },
 

@@ -84,8 +84,8 @@ ZT.Tile.prototype.draw = function(){
     //this.box.drawRect(this.worldX, this.worldY, this.width, this.height);
     //this.game.backgroundLayer.add(this.box);
 
-    //this.text = this.game.phaser.make.text(this.worldX + 8, this.worldY + 16, this.realX + ',' + this.realY, {font: "7pt Arial", fill: "#FFFFFF"});
-    //this.game.hudLayer.add(this.text);
+    this.text = this.game.phaser.make.text(this.worldX + 8, this.worldY + 16, this.realX + ',' + this.realY, {font: "7pt Arial", fill: "#FFFFFF"});
+    this.game.hudLayer.add(this.text);
 
 }
 
