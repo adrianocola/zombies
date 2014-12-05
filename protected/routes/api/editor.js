@@ -8,8 +8,6 @@ app.get('/api/editor/resetWorld', function (req, res) {
         , 'Transfer-Encoding': 'chunked'
     });
 
-    var start = new Date();
-
     var fromX = parseInt(req.query.fromX || -30);
     var toX = parseInt(req.query.toX || 30);
     var fromY = parseInt(req.query.fromY || -30);
@@ -40,6 +38,8 @@ app.get('/api/editor/resetWorld', function (req, res) {
 
         if(err) console.log(err);
 
+        var start = new Date();
+
         var count = 0;
         var nextPerc = 1;
 
@@ -49,7 +49,7 @@ app.get('/api/editor/resetWorld', function (req, res) {
             res.write('<span></span>');
         },30000);
 
-        var slot;
+        var tile;
         var x = fromX;
         var y = fromY;
 
@@ -57,11 +57,11 @@ app.get('/api/editor/resetWorld', function (req, res) {
             return x < toX || y < toY;
         },function(done){
 
-            slot = new app.models.Tile({
+            tile = new app.models.Tile({
                 pos: [x, y],
                 type: 1
             });
-            slot.save(done);
+            tile.save(done);
 
             count++;
 

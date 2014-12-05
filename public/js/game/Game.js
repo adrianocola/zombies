@@ -6,6 +6,7 @@ ZT.Game = function(options){
     this.tileSize = this.options.visibleSize || 48;
     this.totalSize = 2*this.visibleSize-1;
     this.sideSize = this.visibleSize -1;
+    this.slotSize = this.tileSize/3;
 
     this.width = this.totalSize*this.tileSize;
     this.height = this.totalSize*this.tileSize;
@@ -108,7 +109,6 @@ ZT.Game = function(options){
 
         game.phaser.stage.backgroundColor = '#000000';
 
-        console.log(game.playerModel);
         game.map = new ZT.Map({
             game: game,
             width: game.totalSize,
@@ -127,7 +127,7 @@ ZT.Game = function(options){
 
         game.marker = game.phaser.make.graphics();
         game.marker.lineStyle(1, 0xffffff, 1);
-        game.marker.drawRect(0, 0, game.tileSize, game.tileSize);
+        game.marker.drawRect(0, 0, game.slotSize, game.slotSize);
         game.hudLayer.add(game.marker);
 
         game.playerShadow = game.phaser.add.sprite(game.tileSize/2 -2, game.tileSize/2 -2, 'walking');
@@ -146,8 +146,8 @@ ZT.Game = function(options){
 
 
         game.phaser.input.addMoveCallback(function(){
-            game.marker.x = game.phaser.math.snapToFloor(game.phaser.input.activePointer.worldX, game.tileSize);
-            game.marker.y = game.phaser.math.snapToFloor(game.phaser.input.activePointer.worldY, game.tileSize);
+            game.marker.x = game.phaser.math.snapToFloor(game.phaser.input.activePointer.worldX, game.slotSize);
+            game.marker.y = game.phaser.math.snapToFloor(game.phaser.input.activePointer.worldY, game.slotSize);
         }, this);
 
         game.phaser.input.onDown.add(function(){
@@ -160,7 +160,7 @@ ZT.Game = function(options){
                 playerTile = game.map.getTileWorldXY(game.player.x,game.player.y);
             }
 
-            game.player.target = new Phaser.Point(markerTile.worldX + game.tileSize/2, markerTile.worldY + game.tileSize/2);
+            game.player.target = new Phaser.Point(game.marker.x + game.slotSize/2, game.marker.y+ game.slotSize/2);
             game.player.rotation = game.phaser.physics.arcade.moveToXY(game.player, game.player.target.x, game.player.target.y, 30, 1000);
 
             game.moveRelative(markerTile.x-playerTile.x,markerTile.y-playerTile.y);

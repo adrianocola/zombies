@@ -1,6 +1,4 @@
 
-app.models = {};
-
 var mongoose = app.mongoose = require('mongoose');
 
 if(process.env.NODE_ENV === "prod"){
