@@ -14,8 +14,9 @@ var PlayerModel = Backbone.Model.extend({
 
     moveTo: function(x, y){
 
+        var that = this;
         $.ajax(this.urlRoot + '/move',{type: "POST", data: {point: JSON.stringify([x,y])}, success: function(){
-
+            that.set('pos',[x,y]);
         }});
 
     },
