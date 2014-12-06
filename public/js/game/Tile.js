@@ -9,21 +9,12 @@ ZT.Tile = function(options){
     this.tileModel = this.options.tileModel;
     this.sprite = this.options.sprite;
     this.shadow = this.options.shadow;
-    this.x = this.options.x;
-    this.y = this.options.y;
-    this.realX = this.options.realX;
-    this.realY = this.options.realY;
+    this.x = this.options.x; //tile position x
+    this.y = this.options.y; //tile position y
     this.width = this.options.width;
     this.height = this.options.height;
-    this.worldX = this.options.worldX;
-    this.worldY = this.options.worldY;
-
-}
-
-ZT.Tile.prototype.updatePosition = function(newXRel, newYRel){
-
-    this.x = this.x-newXRel;
-    this.y = this.y-newYRel;
+    this.mapX = this.options.mapX; //tile x position relative to map (in pixels)
+    this.mapY = this.options.mapY; //tile y position relative to map (in pixels)
 
 }
 
@@ -39,12 +30,12 @@ ZT.Tile.prototype.draw = function(){
     var tileTypeName = tileType.get("name");
 
     if(tileType.get("shadow")){
-        this.shadow = this.game.phaser.make.sprite(this.worldX-2, this.worldY-2, tileTypeName);
+        this.shadow = this.game.phaser.make.sprite(this.mapX-2, this.mapY-2, tileTypeName);
         this.shadow.tint = 0x000000;
         this.shadow.alpha = 1;
         this.game.shadowLayer.add(this.shadow);
     }
-    this.sprite = this.game.phaser.make.sprite(this.worldX, this.worldY,tileTypeName);
+    this.sprite = this.game.phaser.make.sprite(this.mapX, this.mapY,tileTypeName);
 
     if(tileType.get("body")){
         var that = this;
@@ -57,8 +48,8 @@ ZT.Tile.prototype.draw = function(){
         }else if(tileType.get("body")!=="rigid"){
             //if you should move body to its original position after moving it
             this.sprite.update = function(){
-                if(Math.abs(this.x - that.worldX) > 2 || Math.abs(this.y - that.worldY) > 2){
-                    that.game.phaser.physics.arcade.moveToXY(this, that.worldX, that.worldY, 40);
+                if(Math.abs(this.x - that.mapX) > 2 || Math.abs(this.y - that.mapY) > 2){
+                    that.game.phaser.physics.arcade.moveToXY(this, that.mapX, that.mapY, 40);
                 }else{
                     this.body.velocity.x = 0;
                     this.body.velocity.y = 0;
@@ -81,11 +72,11 @@ ZT.Tile.prototype.draw = function(){
     //this.box = this.game.phaser.make.graphics();
     //this.box.lineStyle(1, 0x888888, 1);
     //this.box.alpha = 0.3;
-    //this.box.drawRect(this.worldX, this.worldY, this.width, this.height);
+    //this.box.drawRect(this.mapX, this.mapY, this.width, this.height);
     //this.game.backgroundLayer.add(this.box);
 
-    //this.text = this.game.phaser.make.text(this.worldX + 8, this.worldY + 16, this.realX + ',' + this.realY, {font: "7pt Arial", fill: "#FFFFFF"});
-    //this.game.hudLayer.add(this.text);
+    this.text = this.game.phaser.make.text(this.mapX + 8, this.mapY + 16, this.x + ',' + this.y, {font: "7pt Arial", fill: "#FFFFFF"});
+    this.game.hudLayer.add(this.text);
 
 }
 

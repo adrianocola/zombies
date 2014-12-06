@@ -56,7 +56,7 @@ app.use(session({
     cookie: { maxAge: 24*60*60*1000 } //1 day
 }));
 app.use(bodyParser.json());
-//app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(multer());
 app.use(favicon('./public/favicon.ico'));
 app.use(stylus.middleware({ src: './public', compile: compile_nib}));

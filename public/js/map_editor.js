@@ -175,8 +175,8 @@ var EditorMapView = Backbone.View.extend({
         this.firstTileY = 0;
         this.lastTileY = Math.floor(this.height/this.tileHeight);
 
-        this.realCenterX = 0;
-        this.realCenterY = 0;
+        this.centerX = 0;
+        this.centerY = 0;
 
 
         this.tilesCollection = new TilesCollection();

@@ -1,3 +1,13 @@
+
+
+//
+//X e Y devem sempre fazer referencia a posição no map (em pixels)
+//tileX e tileY devem fazer referencia a posicao do tile (em coordenadas x e y)
+//sempre deixar explicito quando estiver fazendo referencia relativa de tileX e tileY (movimento)
+
+
+
+
 ZT.Game = function(options){
 
     this.options = options || {};
@@ -100,7 +110,13 @@ ZT.Game = function(options){
 
         game.phaser.physics.startSystem(Phaser.Physics.ARCADE);
 
-        game.phaser.world.setBounds(-game.width/2 + game.tileSize/2 ,-game.height/2 + game.tileSize/2,game.width,game.height);
+        var mapCenterX = game.tileSize * game.playerModel.x;
+        var mapCenterY = game.tileSize * game.playerModel.y;
+
+        var initX = - game.width/2 + game.tileSize/2 + mapCenterX;
+        var initY = - game.height/2 + game.tileSize/2 + mapCenterY;
+
+        game.phaser.world.setBounds(initX,initY,game.width,game.height);
 
         game.backgroundLayer = game.phaser.add.group();
         game.shadowLayer = game.phaser.add.group();
@@ -115,14 +131,10 @@ ZT.Game = function(options){
             height: game.totalSize,
             tileWidth: game.tileSize,
             tileHeight: game.tileSize,
-            centerWorldX: 0,
-            centerWorldY: 0,
-            realCenterX: 0,
-            realCenterY: 0
-            //centerWorldX: -game.tileSize * game.playerModel.x,
-            //centerWorldY: -game.tileSize * game.playerModel.y,
-            //realCenterX: game.playerModel.x,
-            //realCenterY: game.playerModel.y
+            slotWidth: game.slotSize,
+            slotHeight: game.slotSize,
+            centerX: game.playerModel.x,
+            centerY: game.playerModel.y
         });
 
         game.marker = game.phaser.make.graphics();
@@ -130,13 +142,13 @@ ZT.Game = function(options){
         game.marker.drawRect(0, 0, game.slotSize, game.slotSize);
         game.hudLayer.add(game.marker);
 
-        game.playerShadow = game.phaser.add.sprite(game.tileSize/2 -2, game.tileSize/2 -2, 'walking');
+        game.playerShadow = game.phaser.add.sprite(mapCenterX + game.tileSize/2 -2, mapCenterY + game.tileSize/2 -2, 'walking');
         game.playerShadow.tint = 0x000000;
         game.playerShadow.alpha = 0.6;
         game.playerShadow.anchor.setTo(0.5, 0.5);
         game.playerShadow.scale.setTo(0.75, 0.75);
 
-        game.player = game.phaser.add.sprite(game.tileSize/2, game.tileSize/2, 'walking');
+        game.player = game.phaser.add.sprite(mapCenterX + game.tileSize/2, mapCenterY + game.tileSize/2, 'walking');
         game.player.anchor.setTo(0.5, 0.5);
         game.player.scale.setTo(0.75, 0.75);
         game.anim = game.player.animations.add('walk');
@@ -170,8 +182,8 @@ ZT.Game = function(options){
 
         game.cursors = game.phaser.input.keyboard.createCursorKeys();
 
-        game.phaser.camera.x = -game.width/4 + game.tileSize/4;
-        game.phaser.camera.y = -game.height/4 + game.tileSize/4;
+        game.phaser.camera.x = mapCenterX -game.width/4 + game.tileSize/4;
+        game.phaser.camera.y = mapCenterY -game.height/4 + game.tileSize/4;
 
         //game.phaser.camera.follow(game.player);
         //game.phaser.camera.deadzone = new Phaser.Rectangle(game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.2, game.visibleSize*game.tileSize*0.2);
@@ -230,15 +242,17 @@ ZT.Game = function(options){
     }
 
     function render(){
-        //game.phaser.debug.cameraInfo(game.phaser.camera, game.tileSize, game.tileSize);
+        game.phaser.debug.cameraInfo(game.phaser.camera, game.tileSize, game.tileSize);
         game.phaser.debug.text(game.phaser.time.fps || '--', 2, 14, "#00ff00");
     }
 
 }
 
-ZT.Game.prototype.moveRelative = function(moveX, moveY){
-    game.map.move(moveX, moveY);
-    game.phaser.world.setBounds(game.phaser.world.bounds.x + (moveX * this.tileSize),game.phaser.world.bounds.y + (moveY * this.tileSize),game.width,game.height);
+ZT.Game.prototype.moveRelative = function(relX, relY){
+    var currPos = game.playerModel.get('pos');
+    game.playerModel.moveTo(currPos[0] + relX, currPos[1] + relY);
+    game.map.moveRelative(relX, relY);
+    game.phaser.world.setBounds(game.phaser.world.bounds.x + (relX * this.tileSize),game.phaser.world.bounds.y + (relY * this.tileSize),game.width,game.height);
 }
 
 ZT.Game.prototype.destroy = function(){

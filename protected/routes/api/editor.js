@@ -136,7 +136,7 @@ app.get('/api/editor/tiles', function (req, res) {
     }else if(req.param('points')){
         query.$or = [];
 
-        var points = JSON.parse(req.query.points);
+        var points = JSON.parse(req.param('points'));
 
         for(var i=0; i<points.length; i++){
             query.$or.push(
