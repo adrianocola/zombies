@@ -1,13 +1,13 @@
 {
   "tiles": {
     "1": {
-      "_id": "1",
+      "id": "1",
       "name": "grass",
       "width": "96",
       "height": "96"
     },
     "2": {
-      "_id": "2",
+      "id": "2",
       "name": "building",
       "body": "rigid",
       "shadow": true,
@@ -15,14 +15,14 @@
       "height": "64"
     },
     "3": {
+      "id": "3",
       "name": "road",
       "width": "48",
-      "height": "48",
-      "_id": "3"
+      "height": "48"
     },
     "4": {
+      "id": 4,
       "name": "water",
-      "_id": 4,
       "width": "96",
       "height": "96",
       "body": true

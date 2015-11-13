@@ -101,9 +101,9 @@ watch.watchTree('public/partials',function(){
 //**********
 server.listen(4000, function () {
 
-    var host = server.address().address
-    var port = server.address().port
+    var host = server.address().address;
+    var port = server.address().port;
 
-    console.log('Example app listening at http://%s:%s', host, port);
+    console.log('Zombies eating brains at http://%s:%s', host, port);
 
 });

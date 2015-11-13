@@ -1,0 +1,10 @@
+{
+  "tiles": {
+    "1": {
+      "id": "1",
+      "name": "person",
+      "width": "16",
+      "height": "16"
+    }
+  }
+}

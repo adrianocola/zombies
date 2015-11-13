@@ -12,7 +12,7 @@ var EditorView = Backbone.View.extend({
 
         this.tileTypes.fetch({success: function(col,resp){
             that.updateEditorTiles(col.toArray());
-            that.initilizeMap();
+            that.initializeMap();
         }});
 
         this.currentTileType = undefined;
@@ -30,7 +30,7 @@ var EditorView = Backbone.View.extend({
 
         this.currentTileType = tileTypeModel;
 
-        this.$('.editor_selected_id').val(tileTypeModel.get('_id'));
+        this.$('.editor_selected_id').val(tileTypeModel.id);
         this.$('.editor_selected_tile_img').attr('src',tileTypeModel.tileImgPath());
         this.$('.editor_selected_tile_name').val(tileTypeModel.get('name'));
     },
@@ -82,7 +82,7 @@ var EditorView = Backbone.View.extend({
 
     },
 
-    initilizeMap: function(){
+    initializeMap: function(){
 
         this.editorMapView = new EditorMapView({editor: this, parent: $('.map'), tileTypes: this.tileTypes});
         $('.map').append(this.editorMapView.render().el);
@@ -162,38 +162,41 @@ var EditorMapView = Backbone.View.extend({
         this.showPositions = this.options.showPositions;
         this.showGrid = this.options.showGrid;
 
+        this.regionSize = 11;
+
         this.width = this.$parent.width();
         this.height = this.$parent.height();
         this.tileWidth = 48;
         this.tileHeight = 48;
 
-        this.viewTilesX = Math.floor(this.width/this.tileWidth);
-        this.viewTilesY = Math.floor(this.height/this.tileHeight);
+        this.viewRegionsX = Math.floor(this.width/this.tileWidth/this.regionSize);
+        this.viewRegionsY = Math.floor(this.height/this.tileHeight/this.regionSize);
 
-        this.firstTileX = 0;
-        this.lastTileX = Math.floor(this.width/this.tileWidth);
-        this.firstTileY = 0;
-        this.lastTileY = Math.floor(this.height/this.tileHeight);
+        this.firstRegionX = 0;
+        this.lastRegionX = Math.floor(this.width/this.tileWidth/this.regionSize + 1);
+        this.firstRegionY = 0;
+        this.lastRegionY = Math.floor(this.height/this.tileHeight/this.regionSize + 1);
 
         this.centerX = 0;
         this.centerY = 0;
 
+        this.collection = new RegionCollection();
 
-        this.tilesCollection = new TilesCollection();
-
-        this.listenTo(this.tilesCollection,'add',function(tile){
-            that.addTile(tile);
+        this.listenTo(this.collection,'add',function(region){
+            region.tiles.each(function(tile){
+                that.addTile(tile);
+            });
         });
 
-        var tiles = [];
+        var regions = [];
 
-        for(var x = this.firstTileX; x < this.lastTileX; x++){
-            for(var y = this.firstTileY; y < this.lastTileY; y++){
-                tiles.push([x,y]);
+        for(var x = this.firstRegionX; x < this.lastRegionX; x++){
+            for(var y = this.firstRegionY; y < this.lastRegionY; y++){
+                regions.push([x,y]);
             }
         }
 
-        this.fetchTiles(tiles);
+        this.fetchRegions(regions);
 
     },
 
@@ -227,7 +230,7 @@ var EditorMapView = Backbone.View.extend({
 
     paintTile: function(tileModel){
         if(this.painting && this.editor.currentTileType){
-            tileModel.set('type',this.editor.currentTileType.get('_id'));
+            tileModel.set('type',this.editor.currentTileType.id);
             tileModel.save();
         }
     },
@@ -252,13 +255,13 @@ var EditorMapView = Backbone.View.extend({
         this.showGrid = !this.showGrid;
     },
 
-    addTile: function(tile){
+    addTile: function(tileModel){
 
-        var tileType = this.tileTypes.get(tile.get('type'));
+        var tileType = this.tileTypes.get(tileModel.get('type'));
 
         var editorTile = new EditorMapTileView({
             editorMap: this,
-            model: tile
+            model: tileModel
         });
         this.$el.append(editorTile.render().el);
 
@@ -266,9 +269,9 @@ var EditorMapView = Backbone.View.extend({
 
     },
 
-    fetchTiles: function(tiles){
+    fetchRegions: function(regions){
 
-        this.tilesCollection.fetch({data: {points: JSON.stringify(tiles)}, remove: false});
+        this.collection.fetch({data: {points: JSON.stringify(regions)}, remove: false});
 
     },
 
@@ -280,24 +283,29 @@ var EditorMapView = Backbone.View.extend({
             shouldEase: false,
             stop: function(){
 
-                var tileTopLeftX = -this.cssX / that.tileWidth;
-                var tileTopLeftY = -this.cssY / that.tileHeight;
+                var regionTopLeftX = -this.cssX / that.tileWidth;
+                var regionTopLeftY = -this.cssY / that.tileHeight;
 
-                var tiles = [];
+                var regions = {};
 
-                for(var x = tileTopLeftX; x< tileTopLeftX + that.viewTilesX; x++){
-                    for(var y = tileTopLeftY; y< tileTopLeftY + that.viewTilesY; y++){
+                for(var x = regionTopLeftX - that.regionSize; x< regionTopLeftX + (that.viewRegionsX*that.regionSize) + that.regionSize; x++){
+                    for(var y = regionTopLeftY - that.regionSize; y< regionTopLeftY + (that.viewRegionsY*that.regionSize + that.regionSize); y++){
 
                         var $tile = $('#' + x + 'x' + y + 'y');
 
+
                         if(!$tile.length){
-                            tiles.push([x,y]);
+                            //console.log('MISSING: #' + x + 'x' + y + 'y');
+                            var rx = x>=0?Math.ceil(x/that.regionSize):Math.floor(x/that.regionSize);
+                            var ry = x>=0?Math.ceil(y/that.regionSize):Math.floor(y/that.regionSize);
+                            regions[rx + ':' + ry] = [rx,ry];
+                        }else{
+                            //console.log('FOUND: #' + x + 'x' + y + 'y');
                         }
 
                     }
                 }
-
-                that.fetchTiles(tiles);
+                that.fetchRegions(_.values(regions));
 
             }
         });

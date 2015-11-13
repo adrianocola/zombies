@@ -1,5 +1,5 @@
 var async = require('async');
-
+var sizeof = require('object-sizeof');
 
 app.get('/api/editor/resetWorld', function (req, res) {
 
@@ -8,14 +8,15 @@ app.get('/api/editor/resetWorld', function (req, res) {
         , 'Transfer-Encoding': 'chunked'
     });
 
-    var fromX = parseInt(req.query.fromX || -30);
-    var toX = parseInt(req.query.toX || 30);
-    var fromY = parseInt(req.query.fromY || -30);
-    var toY = parseInt(req.query.toY || 30);
+    var fromX = parseInt(req.query.fromX || -5);
+    var toX = parseInt(req.query.toX || 5);
+    var fromY = parseInt(req.query.fromY || -5);
+    var toY = parseInt(req.query.toY || 5);
+    var size = parseInt(req.query.size || 11);
 
     var total = (toX - fromX + 1) * (toY - fromY + 1);
 
-    res.write("Creating " + total + " tiles<br>");
+    res.write("Creating " + total + " regions ( " + (total*(11*11)) + "tiles)<br>");
 
     app.models.World.findOne({name: "zombietown"}, function(err, world) {
 
@@ -34,7 +35,7 @@ app.get('/api/editor/resetWorld', function (req, res) {
 
     res.write("Reseting DB...<br>");
 
-    app.models.Tile.remove({},function(err) {
+    app.models.Region.remove({},function(err) {
 
         if(err) console.log(err);
 
@@ -43,25 +44,31 @@ app.get('/api/editor/resetWorld', function (req, res) {
         var count = 0;
         var nextPerc = 1;
 
-        res.write("Adding Tiles...<br>");
+        res.write("Adding Regions...<br>");
 
         var ping = setInterval(function(){
             res.write('<span></span>');
         },30000);
 
-        var tile;
+        var region;
         var x = fromX;
         var y = fromY;
 
         async.whilst(function(){
-            return x < toX || y < toY;
+            return x <= toX && y <= toY;
         },function(done){
 
-            tile = new app.models.Tile({
-                pos: [x, y],
-                type: 1
+            region = new app.models.Region({
+                pos: [x, y]
             });
-            tile.save(done);
+
+            for(var i=0;i<size;i++){
+                for(var j=0;j<size;j++) {
+                    region.tiles.push({type: 1, pos: [(x*size)+i,(y*size)+j]});
+                }
+            }
+
+            region.save(done);
 
             count++;
 
@@ -94,49 +101,48 @@ app.get('/api/editor/resetWorld', function (req, res) {
 
 });
 
-
-app.get('/api/editor/tiles', function (req, res) {
+app.get('/api/editor/regions', function (req, res) {
 
     var start = new Date();
 
     var query = {};
 
-    if(req.param('rect')){
+    if(req.query.rect){
         query.pos = {
             $geoWithin : {
-                $box : JSON.parse(req.param('rect'))
+                $box : JSON.parse(req.query.rect)
             }
         }
-    }else if(req.param('rect1') && req.param('rect2')){
+    }else if(req.query.rect1 && req.query.rect2){
         query.$or = [
             {
                 pos: {
                     $geoWithin: {
-                        $box: JSON.parse(req.param('rect1'))
+                        $box: JSON.parse(req.query.rect1)
                     }
                 }
             },
             {
                 pos: {
                     $geoWithin: {
-                        $box: JSON.parse(req.param('rect2'))
+                        $box: JSON.parse(req.query.rect2)
                     }
                 }
             }
         ]
-    }else if(req.param('point')){
-        var point = JSON.parse(req.param('point'));
+    }else if(req.query.point){
+        var point = JSON.parse(req.query.point);
         query.pos = {
             $geoWithin : {
                 $box : [point, point]
             }
         }
 
-    //poor performance! use rect when possible!
-    }else if(req.param('points')){
+        //poor performance! use rect when possible!
+    }else if(req.query.points){
         query.$or = [];
 
-        var points = JSON.parse(req.param('points'));
+        var points = JSON.parse(req.query.points);
 
         for(var i=0; i<points.length; i++){
             query.$or.push(
@@ -151,10 +157,14 @@ app.get('/api/editor/tiles', function (req, res) {
         }
     }
 
-    app.models.Tile.collection.find(query).toArray(function(err,tiles){
+    //avoid empty search error
+    if(query.$or && query.$or.length===0) return res.json([]);
+
+    app.models.Region.collection.find(query).toArray(function(err,regions){
         if(err) console.log(err);
-        console.log("Fetched " + tiles.length + " documents in " + (new Date() - start) + "ms");
-        res.json(tiles);
+        console.log("Fetched " + regions.length + " documents in " + (new Date() - start) + "ms (" +  (Math.round(sizeof(regions)/1024)) + "KB)");
+
+        res.json(regions);
     });
 
 });
@@ -166,7 +176,22 @@ app.put('/api/editor/tiles/:id', function (req, res) {
     //prevent position update
     delete tile.pos;
 
-    app.models.Tile.update({_id: req.param("id")},tile,function(err,updated){
+    if(typeof req.params.id !== 'string') return json(500,false);
+
+    var pos = app.models.Tile.getArrayIndexByTileId(req.params.id);
+
+    //console.log('id: ' + id);
+    //console.log('region: ' + region);
+    //console.log('pos: ' + pos);
+
+    var $set = {};
+    for (var key in tile) {
+        $set['tiles.'+pos+'.'+key] = tile[key];
+    }
+
+    app.models.Region.update({
+        pos: app.models.Tile.getRegionByTileId(req.params.id)
+    },{ "$set": $set},function(err,updated){
 
         if(err) console.log(err);
 
@@ -189,6 +214,14 @@ app.put('/api/editor/tiletypes/:id', function (req, res) {
 
     app.services.AssetsManager.updateTileType(null,req.body,function(err,tileType){
         res.json(tileType);
+    });
+
+});
+
+app.get('/api/editor/thingtypes', function (req, res) {
+
+    app.services.AssetsManager.getThingTypesList(function(err,tiles){
+        res.json(tiles);
     });
 
 });

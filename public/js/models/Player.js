@@ -6,9 +6,14 @@ var PlayerModel = Backbone.Model.extend({
     idAttribute: '_id',
     urlRoot: "/api/player",
 
+    defaults:{
+        pos: [0,0]
+    },
+
     initialize: function(){
 
         this.on('change',this.updateXY);
+        this.updateXY();
 
     },
 

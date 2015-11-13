@@ -13,6 +13,7 @@ ZT.Game = function(options){
     this.options = options || {};
 
     this.visibleSize = this.options.visibleSize || 11;
+    this.regionSize = this.options.regionSize || 11;
     this.tileSize = this.options.visibleSize || 48;
     this.totalSize = 2*this.visibleSize-1;
     this.sideSize = this.visibleSize -1;
@@ -29,23 +30,11 @@ ZT.Game = function(options){
     //start point
     this.start = function start(){
 
-        var count = 2;
-        var loaded = function(){
-            count--;
-            if(count <= 0){
-                boot();
-            }
-        }
-
         this.tileTypes.fetch({success: function(col,resp){
-            loaded();
+            boot();
         }});
 
-        this.playerModel.fetch({success: function(model,resp){
-            loaded();
-        }});
-
-    }
+    };
 
     function boot(){
 
@@ -62,9 +51,8 @@ ZT.Game = function(options){
                 pause: function(){
                     console.log("PPP");
                 }
-            },
-            forceSetTimeOut: true
-        }
+            }
+        };
 
         game.phaser = new Phaser.Game(game_config);
 
@@ -86,20 +74,21 @@ ZT.Game = function(options){
 
         //to calc FPS
         game.phaser.time.advancedTiming = true;
-        //force the game to work with 1 FPS in inactive tabs
-        game.phaser.time.timeCap = 1000;
-        game.phaser.time.deltaCap = 1000;
 
     }
 
     function create(){
 
+        //game.phaser.time.slowMotion = 0.25;
+
         game.phaser.onBlur.add(function(){
-            game.isPaused = true;
+            console.log("BLUR");
+            game.isInactive = true;
         },this);
         //
         game.phaser.onFocus.add(function(){
-            game.isPaused = false;
+            console.log("FOCUS");
+            game.isInactive = false;
         },this);
 
         game.phaser.onPause.add(function(){},this);
@@ -134,7 +123,8 @@ ZT.Game = function(options){
             slotWidth: game.slotSize,
             slotHeight: game.slotSize,
             centerX: game.playerModel.x,
-            centerY: game.playerModel.y
+            centerY: game.playerModel.y,
+            regionSize: game.regionSize
         });
 
         game.marker = game.phaser.make.graphics();
@@ -167,7 +157,8 @@ ZT.Game = function(options){
 
             var playerTile;
             if(game.player.target){
-                playerTile = game.map.getTileWorldXY(game.player.target.x,game.player.target.y);
+                return;
+                //playerTile = game.map.getTileWorldXY(game.player.target.x,game.player.target.y);
             }else{
                 playerTile = game.map.getTileWorldXY(game.player.x,game.player.y);
             }
@@ -242,7 +233,13 @@ ZT.Game = function(options){
     }
 
     function render(){
-        game.phaser.debug.cameraInfo(game.phaser.camera, game.tileSize, game.tileSize);
+
+        //debug deadzone (only in CANVAS mode)
+        //var zone = game.phaser.camera.deadzone;
+        //game.phaser.context.fillStyle = 'rgba(255,0,0,0.6)';
+        //game.phaser.context.fillRect(zone.x, zone.y, zone.width, zone.height);
+
+        //game.phaser.debug.cameraInfo(game.phaser.camera, game.tileSize, game.tileSize);
         game.phaser.debug.text(game.phaser.time.fps || '--', 2, 14, "#00ff00");
     }
 

@@ -18,9 +18,12 @@ ZT.Map = function(options){
     this.tileHeight = this.options.tileHeight;
     this.slotWidth = this.options.slotWidth;
     this.slotHeight = this.options.slotHeight;
-    this.centerX = this.options.centerX; //center tile position x
-    this.centerY = this.options.centerY; //center tile position y
+    this.centerX = this.options.centerX || 0; //center tile position x
+    this.centerY = this.options.centerY || 0; //center tile position y
     this.centerTile = this.options.centerTile; //center tile
+
+    this.viewRegionsX = Math.floor(this.width/this.tileWidth/this.regionSize);
+    this.viewRegionsY = Math.floor(this.height/this.tileHeight/this.regionSize);
 
     this.minX = -Math.floor(this.width/2);
     this.maxX = Math.floor(this.width/2);
@@ -37,22 +40,17 @@ ZT.Map = function(options){
      */
     this.tiles = {};
 
-    this.tilesModels = new TilesCollection();
+    this.regionsModels = new RegionCollection();
 
-    var fetchRect = [
-        [ this.centerX - this.rangeX, this.centerY - this.rangeY],
-        [ this.centerX + this.rangeX, this.centerY + this.rangeY]
-    ]
-
-    this.tilesModels.fetchInRect(fetchRect,{success: function(){
-        that.centerTile = that.tiles[that.centerX + ":" + that.centerY];
-    }});
-
-    this.tilesModels.on('add',function(tileModel){
-        that.addTile(tileModel);
+    this.regionsModels.on('add',function(regionModel){
+        regionModel.tiles.each(function(tileModel){
+            that.addTile(tileModel);
+        });
     });
 
-}
+    this.centerTo(this.centerX,this.centerY);
+
+};
 
 ZT.Map.prototype.getTileWorldXY = function(worldX, worldY){
 
@@ -61,7 +59,7 @@ ZT.Map.prototype.getTileWorldXY = function(worldX, worldY){
 
     return this.tiles[tileX + ":" + tileY];
 
-}
+};
 
 ZT.Map.prototype.addTile = function(tileModel){
 
@@ -85,11 +83,73 @@ ZT.Map.prototype.addTile = function(tileModel){
 
     return tile;
 
-}
+};
+
+/**
+ * Cached regions layout (5x5 without edges):
+ *    _ _ _
+ *  _|C|C|C|_
+ * |C|V|V|V|C|
+ * |C|V|X|V|C|
+ * |C|V|V|V|C|
+ *   |C|C|C|
+ *    ¯ ¯ ¯
+ * X = player region
+ * V = region visible to the player
+ * C = cached region (used for smooth transitions and updates)
+ * @param toX
+ * @param toY
+ */
+ZT.Map.prototype.centerTo = function(toX,toY){
+
+    this.centerRegionX = Math.floor(toX/this.options.regionSize);
+    this.centerRegionY = Math.floor(toY/this.options.regionSize);
+
+    this.firstRegionX = this.centerRegionX-2;
+    this.lastRegionX = this.centerRegionX+2;
+    this.firstRegionY = this.centerRegionY-2;
+    this.lastRegionY = this.centerRegionY+2;
+
+    var regions = [];
+
+    for(var x = this.firstRegionX; x <= this.lastRegionX; x++){
+        for(var y = this.firstRegionY; y <= this.lastRegionY; y++){
+            //don't fetch the edges
+            if(x===this.firstRegionX && y===this.firstRegionY
+                || x===this.firstRegionX && y===this.lastRegionY
+                || x===this.lastRegionX && y===this.firstRegionY
+                || x===this.lastRegionX && y===this.lastRegionY){
+                continue;
+            }
+
+            //check if already fetched region
+            if(this.regionsModels.regionMap[RegionModel.generateId(x,y)]){
+                continue;
+            }
+
+            regions.push([x,y]);
+        }
+    }
+
+    //if have regions to download..
+    if(regions.length){
+        this.regionsModels.fetch({data: {points: JSON.stringify(regions)}, remove: false});
+        //otherwise just update de view tiles not shown
+    }else{
+        //this.updateViewTiles();
+    }
+
+
+};
 
 ZT.Map.prototype.moveRelative = function(relX, relY){
 
     if(!relX && !relY) return;
+
+    this.centerX = this.centerX+relX;
+    this.centerY = this.centerY+relY;
+
+    return this.centerTo(this.centerX,this.centerY);
 
     var absX = Math.abs(relX);
     var absY = Math.abs(relY);
@@ -125,9 +185,9 @@ ZT.Map.prototype.moveRelative = function(relX, relY){
         }
     }
 
-    this.centerTile = this.tiles[(this.centerX+relX) + ":" + (this.centerY+relY)];
-    this.centerX = this.centerTile.x;
-    this.centerY = this.centerTile.y;
+    var centerTile = this.tiles[(this.centerX+relX) + ":" + (this.centerY+relY)];
+    this.centerX = centerTile.x;
+    this.centerY = centerTile.y;
 
     if(relX){
         var x = isRight?this.maxX:this.minX;
@@ -154,8 +214,8 @@ ZT.Map.prototype.moveRelative = function(relX, relY){
         this.tilesModels.fetchInRect([topLeft2, bottomRight2]);
     }
 
-}
+};
 
 ZT.Map.prototype.destroy = function(){
 
-}
+};
