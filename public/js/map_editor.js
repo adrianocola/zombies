@@ -162,20 +162,20 @@ var EditorMapView = Backbone.View.extend({
         this.showPositions = this.options.showPositions;
         this.showGrid = this.options.showGrid;
 
-        this.regionSize = 11;
+        this.regionTiles = 11;
 
         this.width = this.$parent.width();
         this.height = this.$parent.height();
-        this.tileWidth = 48;
-        this.tileHeight = 48;
+        this.tileSize = 48;
+        this.tileSize = 48;
 
-        this.viewRegionsX = Math.floor(this.width/this.tileWidth/this.regionSize);
-        this.viewRegionsY = Math.floor(this.height/this.tileHeight/this.regionSize);
+        this.viewRegionsX = Math.floor(this.width/this.tileSize/this.regionTiles);
+        this.viewRegionsY = Math.floor(this.height/this.tileSize/this.regionTiles);
 
         this.firstRegionX = 0;
-        this.lastRegionX = Math.floor(this.width/this.tileWidth/this.regionSize + 1);
+        this.lastRegionX = Math.floor(this.width/this.tileSize/this.regionTiles + 1);
         this.firstRegionY = 0;
-        this.lastRegionY = Math.floor(this.height/this.tileHeight/this.regionSize + 1);
+        this.lastRegionY = Math.floor(this.height/this.tileSize/this.regionTiles + 1);
 
         this.centerX = 0;
         this.centerY = 0;
@@ -279,25 +279,25 @@ var EditorMapView = Backbone.View.extend({
         var that = this;
 
         this.$el.pep({
-            grid: [this.tileWidth,this.tileHeight],
+            grid: [this.tileSize,this.tileSize],
             shouldEase: false,
             stop: function(){
 
-                var regionTopLeftX = -this.cssX / that.tileWidth;
-                var regionTopLeftY = -this.cssY / that.tileHeight;
+                var regionTopLeftX = -this.cssX / that.tileSize;
+                var regionTopLeftY = -this.cssY / that.tileSize;
 
                 var regions = {};
 
-                for(var x = regionTopLeftX - that.regionSize; x< regionTopLeftX + (that.viewRegionsX*that.regionSize) + that.regionSize; x++){
-                    for(var y = regionTopLeftY - that.regionSize; y< regionTopLeftY + (that.viewRegionsY*that.regionSize + that.regionSize); y++){
+                for(var x = regionTopLeftX - that.regionTiles; x< regionTopLeftX + (that.viewRegionsX*that.regionTiles) + that.regionTiles; x++){
+                    for(var y = regionTopLeftY - that.regionTiles; y< regionTopLeftY + (that.viewRegionsY*that.regionTiles + that.regionTiles); y++){
 
                         var $tile = $('#' + x + 'x' + y + 'y');
 
 
                         if(!$tile.length){
                             //console.log('MISSING: #' + x + 'x' + y + 'y');
-                            var rx = x>=0?Math.ceil(x/that.regionSize):Math.floor(x/that.regionSize);
-                            var ry = x>=0?Math.ceil(y/that.regionSize):Math.floor(y/that.regionSize);
+                            var rx = x>=0?Math.ceil(x/that.regionTiles):Math.floor(x/that.regionTiles);
+                            var ry = x>=0?Math.ceil(y/that.regionTiles):Math.floor(y/that.regionTiles);
                             regions[rx + ':' + ry] = [rx,ry];
                         }else{
                             //console.log('FOUND: #' + x + 'x' + y + 'y');
@@ -358,10 +358,10 @@ var EditorMapTileView = Backbone.View.extend({
         this.$el.attr('id', this.x + 'x' + this.y + 'y');
 
         this.$el.css({
-            left: this.x*this.editorMap.tileWidth,
-            top:  this.y*this.editorMap.tileHeight,
-            width: this.editorMap.tileWidth,
-            height: this.editorMap.tileHeight
+            left: this.x*this.editorMap.tileSize,
+            top:  this.y*this.editorMap.tileSize,
+            width: this.editorMap.tileSize,
+            height: this.editorMap.tileSize
         });
 
         if(!this.editorMap.showPositions){

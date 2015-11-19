@@ -13,14 +13,13 @@ var PlayerModel = Backbone.Model.extend({
     initialize: function(){
 
         this.on('change',this.updateXY);
-        this.updateXY();
 
     },
 
     moveTo: function(x, y){
 
         var that = this;
-        $.ajax(this.urlRoot + '/move',{type: "POST", data: {point: JSON.stringify([x,y])}, success: function(){
+        $.ajax(this.urlRoot + '/move',{type: "POST", data: {x: x, y: y}, success: function(){
             that.set('pos',[x,y]);
         }});
 

@@ -1,32 +1,48 @@
 
 ZT.Tile = function(options){
 
-    this.options = options || {};
+    _.extend(this, Backbone.Events);
+
+    this.options = _.extend({
+        game: undefined, //game reference
+        model: undefined, //tileModel
+        x: 0, //tile absolute X position
+        y: 0, //tile absolute Y position
+        size: 48,//tile size in pixels
+        mapX: 0,//X tile position in the map (in pixels)
+        mayY: 0 //Y tile position in the map (in pixels)
+    },options || {});
 
     this.id = this.genId();
 
     this.game = this.options.game;
-    this.tileModel = this.options.tileModel;
-    this.sprite = this.options.sprite;
-    this.shadow = this.options.shadow;
+    this.model = this.options.model;
     this.x = this.options.x; //tile position x
     this.y = this.options.y; //tile position y
-    this.width = this.options.width;
-    this.height = this.options.height;
     this.mapX = this.options.mapX; //tile x position relative to map (in pixels)
     this.mapY = this.options.mapY; //tile y position relative to map (in pixels)
 
-}
+    this.things = [];
+
+};
 
 ZT.Tile.prototype.genId = function(){
     ZT.Tile.prototype.unique_id_gen = ZT.Tile.prototype.unique_id_gen || 0;
     ZT.Tile.prototype.unique_id_gen++;
     return ZT.Tile.prototype.unique_id_gen;
-}
+};
+
+ZT.Tile.prototype.addThing = function(thing,pos){
+    this.things[pos] = thing;
+};
+
+ZT.Tile.prototype.removeThing = function(pos){
+    this.things[pos] = undefined;;
+};
 
 ZT.Tile.prototype.draw = function(){
 
-    var tileType = this.game.tileTypes.get(this.tileModel.get('type'));
+    var tileType = this.game.tileTypes.get(this.model.get('type'));
     var tileTypeName = tileType.get("name");
 
     if(tileType.get("shadow")){
@@ -61,28 +77,34 @@ ZT.Tile.prototype.draw = function(){
         this.game.backgroundLayer.add(this.sprite);
     }
 
-    if(this.width != tileType.get('width') || this.height != tileType.get('height')){
+    if(this.options.size != tileType.get('width') || this.options.size != tileType.get('height')){
         if(this.shadow){
-            this.shadow.scale.setTo(this.width/tileType.get('width'),this.height/tileType.get('height'));
+            this.shadow.scale.setTo(this.options.size/tileType.get('width'),this.options.size/tileType.get('height'));
         }
-        this.sprite.scale.setTo(this.width/tileType.get('width'),this.height/tileType.get('height'));
+        this.sprite.scale.setTo(this.options.size/tileType.get('width'),this.options.size/tileType.get('height'));
 
     }
 
     //this.box = this.game.phaser.make.graphics();
     //this.box.lineStyle(1, 0x888888, 1);
     //this.box.alpha = 0.3;
-    //this.box.drawRect(this.mapX, this.mapY, this.width, this.height);
+    //this.box.drawRect(this.mapX, this.mapY, this.options.size, this.options.size);
     //this.game.backgroundLayer.add(this.box);
 
     //this.text = this.game.phaser.make.text(this.mapX + 8, this.mapY + 16, this.x + ',' + this.y, {font: "7pt Arial", fill: "#FFFFFF"});
     //this.game.hudLayer.add(this.text);
 
-}
+};
 
 ZT.Tile.prototype.destroy = function(){
 
     if(this.box) this.box.destroy(true);
     if(this.text) this.text.destroy(true);
+    if(this.shadow) this.shadow.destroy(true);
+    if(this.sprite) this.sprite.destroy(true);
 
-}
+    for(var i=0;i<this.things.length;i++){
+        if(this.things[i]) this.things[i].destroy(true);
+    }
+
+};

@@ -66631,12 +66631,12 @@ Phaser.Tilemap = function (game, key, tileWidth, tileHeight, width, height) {
     /**
     * @property {number} tileWidth - The base width of the tiles in the map (in pixels).
     */
-    this.tileWidth = data.tileWidth;
+    this.tileSize = data.tileSize;
 
     /**
     * @property {number} tileHeight - The base height of the tiles in the map (in pixels).
     */
-    this.tileHeight = data.tileHeight;
+    this.tileSize = data.tileSize;
 
     /**
     * @property {string} orientation - The orientation of the map data (as specified in Tiled), usually 'orthogonal'.
@@ -66807,8 +66807,8 @@ Phaser.Tilemap.prototype = {
     */
     setTileSize: function (tileWidth, tileHeight) {
 
-        this.tileWidth = tileWidth;
-        this.tileHeight = tileHeight;
+        this.tileSize = tileWidth;
+        this.tileSize = tileHeight;
         this.widthInPixels = this.width * tileWidth;
         this.heightInPixels = this.height * tileHeight;
 
@@ -66830,8 +66830,8 @@ Phaser.Tilemap.prototype = {
     */
     addTilesetImage: function (tileset, key, tileWidth, tileHeight, tileMargin, tileSpacing, gid) {
 
-        if (typeof tileWidth === 'undefined') { tileWidth = this.tileWidth; }
-        if (typeof tileHeight === 'undefined') { tileHeight = this.tileHeight; }
+        if (typeof tileWidth === 'undefined') { tileWidth = this.tileSize; }
+        if (typeof tileHeight === 'undefined') { tileHeight = this.tileSize; }
         if (typeof tileMargin === 'undefined') { tileMargin = 0; }
         if (typeof tileSpacing === 'undefined') { tileSpacing = 0; }
         if (typeof gid === 'undefined') { gid = 0; }
@@ -67782,7 +67782,7 @@ Phaser.Tilemap.prototype = {
             {
                 var tile = this.layers[layer].data[y][x];
 
-                this.layers[layer].data[y][x] = new Phaser.Tile(this.layers[layer], -1, x, y, this.tileWidth, this.tileHeight);
+                this.layers[layer].data[y][x] = new Phaser.Tile(this.layers[layer], -1, x, y, this.tileSize, this.tileSize);
 
                 this.layers[layer].dirty = true;
 
@@ -67863,7 +67863,7 @@ Phaser.Tilemap.prototype = {
                 }
                 else
                 {
-                    this.layers[layer].data[y][x] = new Phaser.Tile(this.layers[layer], index, x, y, this.tileWidth, this.tileHeight);
+                    this.layers[layer].data[y][x] = new Phaser.Tile(this.layers[layer], index, x, y, this.tileSize, this.tileSize);
                 }
             }
 
@@ -68031,8 +68031,8 @@ Phaser.Tilemap.prototype = {
     */
     getTileWorldXY: function (x, y, tileWidth, tileHeight, layer) {
 
-        if (typeof tileWidth === 'undefined') { tileWidth = this.tileWidth; }
-        if (typeof tileHeight === 'undefined') { tileHeight = this.tileHeight; }
+        if (typeof tileWidth === 'undefined') { tileWidth = this.tileSize; }
+        if (typeof tileHeight === 'undefined') { tileHeight = this.tileSize; }
 
         layer = this.getLayer(layer);
 
@@ -68694,14 +68694,14 @@ Phaser.TilemapLayer = function (game, tilemap, index, width, height) {
         renderWidth: 0,
         renderHeight: 0,
 
-        tileWidth: tilemap.tileWidth,
-        tileHeight: tilemap.tileHeight,
+        tileWidth: tilemap.tileSize,
+        tileHeight: tilemap.tileSize,
 
         // Collision width/height (pixels)
         // What purpose do these have? Most things use tile width/height directly.
         // This also only extends collisions right and down.       
-        cw: tilemap.tileWidth,
-        ch: tilemap.tileHeight,
+        cw: tilemap.tileSize,
+        ch: tilemap.tileSize,
 
         // Cached tilesets from index -> Tileset
         tilesets: []
@@ -68896,7 +68896,7 @@ Phaser.TilemapLayer.prototype._unfixY = function (y) {
 Phaser.TilemapLayer.prototype.getTileX = function (x) {
 
     // var tileWidth = this.tileWidth * this.scale.x;
-    return Math.floor(this._fixX(x) / this._mc.tileWidth);
+    return Math.floor(this._fixX(x) / this._mc.tileSize);
 
 };
 
@@ -68911,7 +68911,7 @@ Phaser.TilemapLayer.prototype.getTileX = function (x) {
 Phaser.TilemapLayer.prototype.getTileY = function (y) {
 
     // var tileHeight = this.tileHeight * this.scale.y;
-    return Math.floor(this._fixY(y) / this._mc.tileHeight);
+    return Math.floor(this._fixY(y) / this._mc.tileSize);
 
 };
 
@@ -69006,8 +69006,8 @@ Phaser.TilemapLayer.prototype.getTiles = function (x, y, width, height, collides
     x = this._fixX(x);
     y = this._fixY(y);
 
-    var tw = this._mc.tileWidth;
-    var th = this._mc.tileHeight;
+    var tw = this._mc.tileSize;
+    var th = this._mc.tileSize;
 
     //  Convert the pixel values into tile coordinates
     var tx = Math.floor(x / this._mc.cw);
@@ -69170,8 +69170,8 @@ Phaser.TilemapLayer.prototype.renderRegion = function (scrollX, scrollY, left, t
 
     var width = this.layer.width;
     var height = this.layer.height;
-    var tw = this._mc.tileWidth;
-    var th = this._mc.tileHeight;
+    var tw = this._mc.tileSize;
+    var th = this._mc.tileSize;
 
     var tilesets = this._mc.tilesets;
     var lastAlpha = NaN;
@@ -69278,8 +69278,8 @@ Phaser.TilemapLayer.prototype.renderDeltaScroll = function (shiftX, shiftY) {
     var renderW = this.canvas.width;
     var renderH = this.canvas.height;
 
-    var tw = this._mc.tileWidth;
-    var th = this._mc.tileHeight;
+    var tw = this._mc.tileSize;
+    var th = this._mc.tileSize;
 
     // Only cells with coordinates in the "plus" formed by `left <= x <= right` OR `top <= y <= bottom` are drawn. These coordinates may be outside the layer bounds.
 
@@ -69355,8 +69355,8 @@ Phaser.TilemapLayer.prototype.renderFull = function ()
     var renderW = this.canvas.width;
     var renderH = this.canvas.height;
 
-    var tw = this._mc.tileWidth;
-    var th = this._mc.tileHeight;
+    var tw = this._mc.tileSize;
+    var th = this._mc.tileSize;
 
     var left = Math.floor(scrollX / tw);
     var right = Math.floor((renderW - 1 + scrollX) / tw);
@@ -69473,8 +69473,8 @@ Phaser.TilemapLayer.prototype.renderDebug = function () {
 
     var width = this.layer.width;
     var height = this.layer.height;
-    var tw = this._mc.tileWidth;
-    var th = this._mc.tileHeight;
+    var tw = this._mc.tileSize;
+    var th = this._mc.tileSize;
 
     var left = Math.floor(scrollX / tw);
     var right = Math.floor((renderW - 1 + scrollX) / tw);
@@ -69738,8 +69738,8 @@ Phaser.TilemapParser = {
         map.name = key;
         map.width = width;
         map.height = height;
-        map.tileWidth = tileWidth;
-        map.tileHeight = tileHeight;
+        map.tileSize = tileWidth;
+        map.tileSize = tileHeight;
         map.widthInPixels = width * tileWidth;
         map.heightInPixels = height * tileHeight;
 
@@ -69765,11 +69765,11 @@ Phaser.TilemapParser = {
 
         map.width = 0;
         map.height = 0;
-        map.tileWidth = 0;
-        map.tileHeight = 0;
+        map.tileSize = 0;
+        map.tileSize = 0;
 
-        if (typeof tileWidth !== 'undefined' && tileWidth !== null) { map.tileWidth = tileWidth; }
-        if (typeof tileHeight !== 'undefined' && tileHeight !== null) { map.tileHeight = tileHeight; }
+        if (typeof tileWidth !== 'undefined' && tileWidth !== null) { map.tileSize = tileWidth; }
+        if (typeof tileHeight !== 'undefined' && tileHeight !== null) { map.tileSize = tileHeight; }
         if (typeof width !== 'undefined' && width !== null) { map.width = width; }
         if (typeof height !== 'undefined' && height !== null) { map.height = height; }
 
@@ -69834,14 +69834,14 @@ Phaser.TilemapParser = {
 
         map.width = json.width;
         map.height = json.height;
-        map.tileWidth = json.tilewidth;
-        map.tileHeight = json.tileheight;
+        map.tileSize = json.tilewidth;
+        map.tileSize = json.tileheight;
         map.orientation = json.orientation;
         map.format = Phaser.Tilemap.TILED_JSON;
         map.version = json.version;
         map.properties = json.properties;
-        map.widthInPixels = map.width * map.tileWidth;
-        map.heightInPixels = map.height * map.tileHeight;
+        map.widthInPixels = map.width * map.tileSize;
+        map.heightInPixels = map.height * map.tileSize;
 
         //  Tile Layers
         var layers = [];
@@ -70103,7 +70103,7 @@ Phaser.TilemapParser = {
                 //  Can add extra properties here as needed
                 map.tiles[t] = [x, y, i];
 
-                x += set.tileWidth + set.tileSpacing;
+                x += set.tileSize + set.tileSpacing;
 
                 count++;
 
@@ -70117,7 +70117,7 @@ Phaser.TilemapParser = {
                 if (countX === set.columns)
                 {
                     x = set.tileMargin;
-                    y += set.tileHeight + set.tileSpacing;
+                    y += set.tileSize + set.tileSpacing;
 
                     countX = 0;
                     countY++;
@@ -70218,14 +70218,14 @@ Phaser.Tileset = function (name, firstgid, width, height, margin, spacing, prope
     * @property {integer} tileWidth
     * @readonly
     */
-    this.tileWidth = width | 0;
+    this.tileSize = width | 0;
 
     /**
     * The height of each tile (in pixels).
     * @property {integer} tileHeight
     * @readonly
     */
-    this.tileHeight = height | 0;
+    this.tileSize = height | 0;
 
     /**
     * The margin around the tiles in the sheet (in pixels).
@@ -70315,12 +70315,12 @@ Phaser.Tileset.prototype = {
                 this.image,
                 this.drawCoords[coordIndex],
                 this.drawCoords[coordIndex + 1],
-                this.tileWidth,
-                this.tileHeight,
+                this.tileSize,
+                this.tileSize,
                 x,
                 y,
-                this.tileWidth,
-                this.tileHeight
+                this.tileSize,
+                this.tileSize
             );
         }
 
@@ -70388,8 +70388,8 @@ Phaser.Tileset.prototype = {
     updateTileData: function (imageWidth, imageHeight) {
 
         // May be fractional values
-        var rowCount = (imageHeight - this.tileMargin) / (this.tileHeight + this.tileSpacing);
-        var colCount = (imageWidth - this.tileMargin) / (this.tileWidth + this.tileSpacing);
+        var rowCount = (imageHeight - this.tileMargin) / (this.tileSize + this.tileSpacing);
+        var colCount = (imageWidth - this.tileMargin) / (this.tileSize + this.tileSpacing);
 
         if (rowCount % 1 !== 0 || colCount % 1 !== 0)
         {
@@ -70421,11 +70421,11 @@ Phaser.Tileset.prototype = {
             {
                 this.drawCoords.push(tx);
                 this.drawCoords.push(ty);
-                tx += this.tileWidth + this.tileSpacing;
+                tx += this.tileSize + this.tileSpacing;
             }
 
             tx = this.tileMargin;
-            ty += this.tileHeight + this.tileSpacing;
+            ty += this.tileSize + this.tileSpacing;
         }
 
     }

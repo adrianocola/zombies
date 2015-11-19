@@ -5,6 +5,12 @@
       "name": "person",
       "width": "16",
       "height": "16"
+    },
+    "2": {
+      "id": "2",
+      "name": "zombie",
+      "width": "48",
+      "height": "48"
     }
   }
 }

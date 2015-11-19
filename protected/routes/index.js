@@ -1,21 +1,22 @@
 
 app.get('/', function (req, res) {
 
-    var name = req.param("name") || "default";
+    if(req.session.player) return res.render('index');
 
-    if(req.session.player && req.session.player.name !== name){
-        req.session.regenerate(function(err){});
-    }
+    var name = req.query.name || "default";
 
     app.models.Player.findOne({name: name},function(err, player){
-
+        if(err) console.log(err);
         if(!player){
 
             player = new app.models.Player({
                 name: name,
                 pos: [0,0]
             });
-            player.save(function(err){});
+            player.save(function(err){
+                if(err) console.log(err);
+
+            });
 
         }
 
@@ -25,10 +26,7 @@ app.get('/', function (req, res) {
 
     });
 
-
-
-
-})
+});
 
 app.get('/map_editor', function (req, res) {
 

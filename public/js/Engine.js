@@ -249,8 +249,8 @@
             });
 
             this.$el.css({
-                width: this.consts.visibleSize + "px",
-                height: this.consts.visibleSize + "px"
+                width: this.consts.visibleTiles + "px",
+                height: this.consts.visibleTiles + "px"
             });
             this.$map.css({
                 //top: this.consts.border + "px",

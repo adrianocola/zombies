@@ -9,29 +9,36 @@
 ZT.Map = function(options){
     var that = this;
 
-    this.options = options || {};
+    _.extend(this, Backbone.Events);
+
+    this.options = _.extend({
+        game: undefined, //game reference
+        totalTiles: 21,//total number of tiles (per axis)
+        tileSize: 48, //tile size in pixels
+        slotSize: 16, //slot size in pixels
+        centerX: 0,//center tile position x
+        centerY: 0,//center tile position y
+        centerTile: undefined//tile that is in the center of the map
+    },options || {});
 
     this.game = this.options.game;
-    this.width = this.options.width;
-    this.height = this.options.height;
-    this.tileWidth = this.options.tileWidth;
-    this.tileHeight = this.options.tileHeight;
-    this.slotWidth = this.options.slotWidth;
-    this.slotHeight = this.options.slotHeight;
-    this.centerX = this.options.centerX || 0; //center tile position x
-    this.centerY = this.options.centerY || 0; //center tile position y
+    this.totalTiles = this.options.totalTiles;
+    this.tileSize = this.options.tileSize;
+    this.slotSize = this.options.slotSize;
+    this.centerX = this.options.centerX;
+    this.centerY = this.options.centerY;
     this.centerTile = this.options.centerTile; //center tile
 
-    this.viewRegionsX = Math.floor(this.width/this.tileWidth/this.regionSize);
-    this.viewRegionsY = Math.floor(this.height/this.tileHeight/this.regionSize);
+    this.viewRegionsX = Math.floor(this.totalTiles/this.tileSize/this.game.regionTiles);
+    this.viewRegionsY = Math.floor(this.totalTiles/this.tileSize/this.game.regionTiles);
 
-    this.minX = -Math.floor(this.width/2);
-    this.maxX = Math.floor(this.width/2);
-    this.minY = -Math.floor(this.height/2);
-    this.maxY = Math.floor(this.height/2);
+    this.minX = -Math.floor(this.totalTiles/2);
+    this.maxX = Math.floor(this.totalTiles/2);
+    this.minY = -Math.floor(this.totalTiles/2);
+    this.maxY = Math.floor(this.totalTiles/2);
 
-    this.rangeX = Math.floor(this.width/2);
-    this.rangeY = Math.floor(this.height/2);
+    this.rangeX = Math.floor(this.totalTiles/2);
+    this.rangeY = Math.floor(this.totalTiles/2);
 
     /**
      * all tiles currently visible in the map
@@ -54,10 +61,22 @@ ZT.Map = function(options){
 
 ZT.Map.prototype.getTileWorldXY = function(worldX, worldY){
 
-    var tileX = Math.floor(worldX/this.tileWidth);
-    var tileY = Math.floor(worldY/this.tileHeight);
+    var tileX = Math.floor(worldX/this.tileSize);
+    var tileY = Math.floor(worldY/this.tileSize);
 
     return this.tiles[tileX + ":" + tileY];
+
+};
+
+ZT.Map.prototype.getSlotWorldXY = function(worldX, worldY){
+
+    var tileX = Math.floor(worldX/this.tileSize);
+    var tileY = Math.floor(worldY/this.tileSize);
+
+    var slotX = Math.floor((worldX-tileX*this.tileSize) / this.slotSize);
+    var slotY = Math.floor((worldY-tileY*this.tileSize) / this.slotSize);
+
+    return tileX + ":" + tileY + ":" + (slotX+3*slotY);
 
 };
 
@@ -68,13 +87,13 @@ ZT.Map.prototype.addTile = function(tileModel){
 
     var tile = new ZT.Tile({
         game: this.game,
-        tileModel: tileModel,
+        model: tileModel,
         x: x,
         y: y,
-        mapX: x * this.tileWidth,
-        mapY: y * this.tileHeight,
-        width: this.tileWidth,
-        height: this.tileHeight
+        mapX: x * this.tileSize,
+        mapY: y * this.tileSize,
+        size: this.tileSize,
+        slotSize: this.slotSize
     });
 
     tile.draw();
@@ -102,8 +121,8 @@ ZT.Map.prototype.addTile = function(tileModel){
  */
 ZT.Map.prototype.centerTo = function(toX,toY){
 
-    this.centerRegionX = Math.floor(toX/this.options.regionSize);
-    this.centerRegionY = Math.floor(toY/this.options.regionSize);
+    this.centerRegionX = Math.floor(toX/this.options.regionTiles);
+    this.centerRegionY = Math.floor(toY/this.options.regionTiles);
 
     this.firstRegionX = this.centerRegionX-2;
     this.lastRegionX = this.centerRegionX+2;
@@ -150,69 +169,70 @@ ZT.Map.prototype.moveRelative = function(relX, relY){
     this.centerY = this.centerY+relY;
 
     return this.centerTo(this.centerX,this.centerY);
+    //TODO remove tiles that are out of the player vision (below)
 
-    var absX = Math.abs(relX);
-    var absY = Math.abs(relY);
-
-    var isRight = relX>0;
-    var isBottom = relY>0;
-
-    for(var x = 0; x < absX; x++){
-        for(var y = this.minY + this.centerY ; y <= this.maxY + this.centerY ; y++){
-            //if is moving right, should remove from the left side
-            var mapX = this.centerX + (isRight?this.minX+x:this.maxX-x);
-
-            var tile = this.tiles[mapX + ":" + y];
-            delete this.tiles[mapX + ":" + y];
-            if(tile){
-                tile.destroy();
-                this.tilesModels.remove(tile.tileModel);
-            }
-        }
-    }
-
-    for(var y = 0; y < absY; y++){
-        for(var x = this.centerX - this.rangeX ; x <= this.maxX + this.centerX ; x++){
-            //if is moving down, should remove from the top side
-            var mapY = this.centerY + (isBottom?this.minY+y:this.maxY-y);
-
-            var tile = this.tiles[x + ":" + mapY];
-            delete this.tiles[x + ":" + mapY];
-            if(tile){
-                tile.destroy();
-                this.tilesModels.remove(tile.tileModel);
-            }
-        }
-    }
-
-    var centerTile = this.tiles[(this.centerX+relX) + ":" + (this.centerY+relY)];
-    this.centerX = centerTile.x;
-    this.centerY = centerTile.y;
-
-    if(relX){
-        var x = isRight?this.maxX:this.minX;
-        var topLeft1 = [this.centerX  + x - relX +1, this.minY-relY + this.centerY];
-        var bottomRight1 = [this.centerX + x, this.maxY-relY + this.centerY];
-    }
-    if(relY){
-        var y = isBottom?this.maxY:this.minY;
-        var topLeft2 = [this.minX-relX + this.centerX, this.centerY + y - relY + 1];
-        var bottomRight2 = [this.maxX-relX + this.centerX, this.centerY + y];
-    }
-
-    if(relX && relY){
-        //in case of a diagonal move adjust the rects
-        topLeft1[1] += relY;
-        bottomRight1[1] += relY;
-        topLeft2[0] += relX;
-        bottomRight2[0] += relX;
-
-        this.tilesModels.fetchInTwoRects([ topLeft1, bottomRight1 ], [ topLeft2 ,bottomRight2 ]);
-    }else if(relX){
-        this.tilesModels.fetchInRect([ topLeft1, bottomRight1 ]);
-    }else if(relY) {
-        this.tilesModels.fetchInRect([topLeft2, bottomRight2]);
-    }
+    //var absX = Math.abs(relX);
+    //var absY = Math.abs(relY);
+    //
+    //var isRight = relX>0;
+    //var isBottom = relY>0;
+    //
+    //for(var x = 0; x < absX; x++){
+    //    for(var y = this.minY + this.centerY ; y <= this.maxY + this.centerY ; y++){
+    //        //if is moving right, should remove from the left side
+    //        var mapX = this.centerX + (isRight?this.minX+x:this.maxX-x);
+    //
+    //        var tile = this.tiles[mapX + ":" + y];
+    //        delete this.tiles[mapX + ":" + y];
+    //        if(tile){
+    //            tile.destroy();
+    //            this.tilesModels.remove(tile.tileModel);
+    //        }
+    //    }
+    //}
+    //
+    //for(var y = 0; y < absY; y++){
+    //    for(var x = this.centerX - this.rangeX ; x <= this.maxX + this.centerX ; x++){
+    //        //if is moving down, should remove from the top side
+    //        var mapY = this.centerY + (isBottom?this.minY+y:this.maxY-y);
+    //
+    //        var tile = this.tiles[x + ":" + mapY];
+    //        delete this.tiles[x + ":" + mapY];
+    //        if(tile){
+    //            tile.destroy();
+    //            this.tilesModels.remove(tile.tileModel);
+    //        }
+    //    }
+    //}
+    //
+    //var centerTile = this.tiles[(this.centerX+relX) + ":" + (this.centerY+relY)];
+    //this.centerX = centerTile.x;
+    //this.centerY = centerTile.y;
+    //
+    //if(relX){
+    //    var x = isRight?this.maxX:this.minX;
+    //    var topLeft1 = [this.centerX  + x - relX +1, this.minY-relY + this.centerY];
+    //    var bottomRight1 = [this.centerX + x, this.maxY-relY + this.centerY];
+    //}
+    //if(relY){
+    //    var y = isBottom?this.maxY:this.minY;
+    //    var topLeft2 = [this.minX-relX + this.centerX, this.centerY + y - relY + 1];
+    //    var bottomRight2 = [this.maxX-relX + this.centerX, this.centerY + y];
+    //}
+    //
+    //if(relX && relY){
+    //    //in case of a diagonal move adjust the rects
+    //    topLeft1[1] += relY;
+    //    bottomRight1[1] += relY;
+    //    topLeft2[0] += relX;
+    //    bottomRight2[0] += relX;
+    //
+    //    this.tilesModels.fetchInTwoRects([ topLeft1, bottomRight1 ], [ topLeft2 ,bottomRight2 ]);
+    //}else if(relX){
+    //    this.tilesModels.fetchInRect([ topLeft1, bottomRight1 ]);
+    //}else if(relY) {
+    //    this.tilesModels.fetchInRect([topLeft2, bottomRight2]);
+    //}
 
 };
 

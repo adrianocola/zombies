@@ -10,7 +10,7 @@ var ThingModel = Backbone.Model.extend({
 
     },
 
-    getSlotId: function(){
+    getThingId: function(){
         return TileModel.generateId(this.get("x"),this.get("y"),this.get("slot"));
     }
 

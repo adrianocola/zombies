@@ -6,4 +6,4 @@ ZT.Util = {
     endTimer: function(id){
         console.log((id || "*") + ": " + (new Date() - ZT.Util.timers[id || "*"]));
     }
-}
+};

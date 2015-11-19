@@ -6,21 +6,30 @@
 //sempre deixar explicito quando estiver fazendo referencia relativa de tileX e tileY (movimento)
 
 
-
-
+/**
+ * The game map is always a square!
+ * @param options
+ * @constructor
+ */
 ZT.Game = function(options){
 
-    this.options = options || {};
+    _.extend(this, Backbone.Events);
 
-    this.visibleSize = this.options.visibleSize || 11;
-    this.regionSize = this.options.regionSize || 11;
-    this.tileSize = this.options.visibleSize || 48;
-    this.totalSize = 2*this.visibleSize-1;
-    this.sideSize = this.visibleSize -1;
-    this.slotSize = this.tileSize/3;
+    this.options = _.extend({
+        visibleTiles: 11, //number of tiles visible (square). OBS: must be odd
+        regionTiles: 11, //number of tiles in a region (square)
+        tileSize: 48, //tile width and height (in px)
+        slotSize: 16 //slot width and height (in px)
+    },options || {});
 
-    this.width = this.totalSize*this.tileSize;
-    this.height = this.totalSize*this.tileSize;
+    this.visibleSize = this.options.visibleTiles;
+    this.regionTiles = this.options.regionTiles;
+    this.tileSize = this.options.tileSize;
+    this.slotSize = this.options.slotSize;
+
+    this.totalSize = 2*this.visibleSize-1; //total number of tiles to show
+    this.width = this.totalSize*this.tileSize; //total game width (in px)
+    this.height = this.totalSize*this.tileSize; //total game height (in px)
 
     this.tileTypes = new TileTypesCollection();
     this.playerModel = new PlayerModel();
@@ -30,9 +39,14 @@ ZT.Game = function(options){
     //start point
     this.start = function start(){
 
-        this.tileTypes.fetch({success: function(col,resp){
-            boot();
-        }});
+        async.parallel([
+            function(cb){
+                game.tileTypes.fetch({success: cb});
+            },
+            function(cb){
+                game.playerModel.fetch({success: cb});
+            }
+        ], boot);
 
     };
 
@@ -69,6 +83,7 @@ ZT.Game = function(options){
         }
 
         game.phaser.load.image('player', 'img/player2.png');
+        game.phaser.load.image('zombie', 'img/zombie.png');
         game.phaser.load.spritesheet('walking', 'img/walking.png', 16, 16, 4);
 
 
@@ -110,21 +125,19 @@ ZT.Game = function(options){
         game.backgroundLayer = game.phaser.add.group();
         game.shadowLayer = game.phaser.add.group();
         game.constructionLayer = game.phaser.add.group();
+        game.thingLayer = game.phaser.add.group();
         game.hudLayer = game.phaser.add.group();
 
         game.phaser.stage.backgroundColor = '#000000';
 
         game.map = new ZT.Map({
             game: game,
-            width: game.totalSize,
-            height: game.totalSize,
-            tileWidth: game.tileSize,
-            tileHeight: game.tileSize,
-            slotWidth: game.slotSize,
-            slotHeight: game.slotSize,
+            totalTiles: game.totalSize,
+            tileSize: game.tileSize,
+            slotSize: game.slotSize,
             centerX: game.playerModel.x,
             centerY: game.playerModel.y,
-            regionSize: game.regionSize
+            regionTiles: game.regionTiles
         });
 
         game.marker = game.phaser.make.graphics();
@@ -132,20 +145,12 @@ ZT.Game = function(options){
         game.marker.drawRect(0, 0, game.slotSize, game.slotSize);
         game.hudLayer.add(game.marker);
 
-        game.playerShadow = game.phaser.add.sprite(mapCenterX + game.tileSize/2 -2, mapCenterY + game.tileSize/2 -2, 'walking');
-        game.playerShadow.tint = 0x000000;
-        game.playerShadow.alpha = 0.6;
-        game.playerShadow.anchor.setTo(0.5, 0.5);
-        game.playerShadow.scale.setTo(0.75, 0.75);
+        //var area = 600;
+        //for(var i=0;i<1000;i++){
+        //    var thing = new ZT.Thing({x: _.random(-area,area), y:_.random(-area,area), game:game, image:"zombie", shadow: false, goback: true});
+        //}
 
-        game.player = game.phaser.add.sprite(mapCenterX + game.tileSize/2, mapCenterY + game.tileSize/2, 'walking');
-        game.player.anchor.setTo(0.5, 0.5);
-        game.player.scale.setTo(0.75, 0.75);
-        game.anim = game.player.animations.add('walk');
-
-        game.phaser.physics.arcade.enable(game.player,Phaser.Physics.ARCADE);
-        game.player.body.allowRotation = false;
-
+        game.player = new ZT.Thing({x: game.playerModel.x * game.tileSize, y: game.playerModel.y * game.tileSize, game:game, image:"walking", shadow: true, animation: 'walk'});
 
         game.phaser.input.addMoveCallback(function(){
             game.marker.x = game.phaser.math.snapToFloor(game.phaser.input.activePointer.worldX, game.slotSize);
@@ -154,63 +159,33 @@ ZT.Game = function(options){
 
         game.phaser.input.onDown.add(function(){
             var markerTile = game.map.getTileWorldXY(game.marker.x,game.marker.y);
+            console.log(game.map.getSlotWorldXY(game.marker.x,game.marker.y));
+            var playerTile = game.map.getTileWorldXY(game.player.sprite.x,game.player.sprite.y);
 
-            var playerTile;
-            if(game.player.target){
-                return;
-                //playerTile = game.map.getTileWorldXY(game.player.target.x,game.player.target.y);
-            }else{
-                playerTile = game.map.getTileWorldXY(game.player.x,game.player.y);
-            }
-
-            game.player.target = new Phaser.Point(game.marker.x + game.slotSize/2, game.marker.y+ game.slotSize/2);
-            game.player.rotation = game.phaser.physics.arcade.moveToXY(game.player, game.player.target.x, game.player.target.y, 30, 1000);
-
+            game.player.moveToXY(game.marker.x,game.marker.y);
             game.moveRelative(markerTile.x-playerTile.x,markerTile.y-playerTile.y);
-            game.anim.play(7, true);
 
         }, this);
 
         game.cursors = game.phaser.input.keyboard.createCursorKeys();
 
-        game.phaser.camera.x = mapCenterX -game.width/4 + game.tileSize/4;
-        game.phaser.camera.y = mapCenterY -game.height/4 + game.tileSize/4;
+        game.phaser.camera.x = game.player.sprite.x;
+        game.phaser.camera.y = game.player.sprite.y;
 
-        game.phaser.camera.follow(game.player);
-        game.phaser.camera.deadzone = new Phaser.Rectangle(game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.2, game.visibleSize*game.tileSize*0.2);
+        //game.phaser.camera.follow(game.player.sprite);
+        //game.phaser.camera.deadzone = new Phaser.Rectangle(game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.2, game.visibleSize*game.tileSize*0.2);
 
     }
 
     function update(){
 
-        game.phaser.physics.arcade.collide(game.player, game.constructionLayer, function(){
+        game.phaser.physics.arcade.collide(game.player.sprite, game.thingLayer, function(){
 
         }, null, this);
 
-        game.phaser.physics.arcade.collide(game.constructionLayer, game.constructionLayer, function(){
+        game.phaser.physics.arcade.collide(game.player.sprite, game.constructionLayer, function(){
 
         }, null, this);
-
-        if(game.player.target){
-            //console.log("Y: " + (game.player.y));
-            game.player.rotate = game.phaser.physics.arcade.moveToXY(game.player, game.player.target.x, game.player.target.y, 100);
-            game.playerShadow.angle = game.player.angle;
-            game.playerShadow.x = game.player.x -1;
-            game.playerShadow.y = game.player.y -1 ;
-            if( Math.abs(game.player.target.x - game.player.x) < 5 && Math.abs(game.player.target.y - game.player.y) < 5){
-
-                game.player.x = game.player.target.x;
-                game.player.y = game.player.target.y;
-
-                game.playerShadow.x = game.player.x -1;
-                game.playerShadow.y = game.player.y -1 ;
-
-                delete game.player.target;
-                game.player.body.velocity.x = 0;
-                game.player.body.velocity.y = 0;
-                game.anim.stop();
-            }
-        }
 
         if (game.cursors.left.isDown)
         {
@@ -243,15 +218,14 @@ ZT.Game = function(options){
         game.phaser.debug.text(game.phaser.time.fps || '--', 2, 14, "#00ff00");
     }
 
-}
+};
 
 ZT.Game.prototype.moveRelative = function(relX, relY){
-    var currPos = game.playerModel.get('pos');
-    game.playerModel.moveTo(currPos[0] + relX, currPos[1] + relY);
+    game.playerModel.moveTo(game.playerModel.x + relX, game.playerModel.y + relY);
     game.map.moveRelative(relX, relY);
     game.phaser.world.setBounds(game.phaser.world.bounds.x + (relX * this.tileSize),game.phaser.world.bounds.y + (relY * this.tileSize),game.width,game.height);
-}
+};
 
 ZT.Game.prototype.destroy = function(){
 
-}
+};
