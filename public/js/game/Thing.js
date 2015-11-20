@@ -10,27 +10,24 @@ ZT.Thing = function (options) {
         image: 'walking',//sprite image to load
         shadow: false, //should generate shadow
         animation: undefined, //animation used when moving
-        x: 0, //tile absolute X position
-        y: 0, //tile absolute Y position
+        tile: undefined, //parent tile
         slot: 0,//tile slot position
-        size: 16,//slot size in pixels
-        mapX: 0,//X thing position in the map (in pixels)
-        mayY: 0 //Y thing position in the map (in pixels)
+        size: 16//slot size in pixels
     },options || {});
 
     this.game = this.options.game;
     this.model = this.options.model;
-    this.x = this.options.x; //tile position x
-    this.y = this.options.y; //tile position y
+    this.tile = this.options.tile;
     this.slot = this.options.slot; //tile slot position
-    this.mapX = this.options.mapX;
-    this.mapY = this.options.mapY;
+    
+    this.mapX = this.tile.mapX + Math.floor(this.slot%3)*this.options.size + this.options.size/2;
+    this.mapY = this.tile.mapY + Math.floor(this.slot/3)*this.options.size + this.options.size/2;
 
     var image = this.game.phaser.cache.getImage(this.options.image);
     var ratio = this.game.slotSize/image.height;
 
     if(this.options.shadow){
-        this.shadow = this.game.phaser.add.sprite(this.x -1, this.y -1, this.options.image);
+        this.shadow = this.game.phaser.add.sprite(this.mapX -1, this.mapY -1, this.options.image);
         this.shadow.tint = 0x000000;
         this.shadow.alpha = 1;
         this.shadow.anchor.setTo(0.4, 0.4);
@@ -38,7 +35,7 @@ ZT.Thing = function (options) {
         this.game.shadowLayer.add(this.shadow);
     }
 
-    this.sprite = this.game.phaser.add.sprite(this.x,this.y, this.options.image);
+    this.sprite = this.game.phaser.add.sprite(this.mapX,this.mapY, this.options.image);
     if(this.options.animation) this.animation = this.sprite.animations.add(this.options.animation);
 
     this.sprite.anchor.setTo(0.4, 0.4);
@@ -99,7 +96,7 @@ ZT.Thing = function (options) {
 
 ZT.Thing.prototype.moveToXY = function(x,y,speed){
     this.target = new Phaser.Point(x, y);
-    var duration = Math.sqrt( Math.pow(this.x-x,2) + Math.pow(this.y-y,2))/(speed || 48) * 1000;
+    var duration = Math.sqrt( Math.pow(this.mapX-x,2) + Math.pow(this.mapY-y,2))/(speed || 48) * 1000;
     this.sprite.rotation = this.game.phaser.physics.arcade.moveToXY(this.sprite, x, y, speed || 48, duration);
     if(this.animation) this.animation.play(7, true);
 };

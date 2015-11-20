@@ -87,12 +87,12 @@ ZT.Tile.prototype.draw = function(){
 
     //this.box = this.game.phaser.make.graphics();
     //this.box.lineStyle(1, 0x888888, 1);
-    //this.box.alpha = 0.3;
-    //this.box.drawRect(this.mapX, this.mapY, this.options.size, this.options.size);
+    //this.box.alpha = 0.5;
+    this.game.graphics.drawRect(this.mapX, this.mapY, this.options.size, this.options.size);
     //this.game.backgroundLayer.add(this.box);
 
-    //this.text = this.game.phaser.make.text(this.mapX + 8, this.mapY + 16, this.x + ',' + this.y, {font: "7pt Arial", fill: "#FFFFFF"});
-    //this.game.hudLayer.add(this.text);
+    //this.text = this.game.phaser.make.text(this.mapX + 18, this.mapY + 19, this.x + ',' + this.y, {font: "7pt Arial", fill: "#aaaaaa"});
+    //this.game.gridLayer.add(this.text);
 
 };
 

@@ -29,6 +29,8 @@ ZT.Map = function(options){
     this.centerY = this.options.centerY;
     this.centerTile = this.options.centerTile; //center tile
 
+    this.tileSlots = this.tileSize/this.slotSize;
+
     this.viewRegionsX = Math.floor(this.totalTiles/this.tileSize/this.game.regionTiles);
     this.viewRegionsY = Math.floor(this.totalTiles/this.tileSize/this.game.regionTiles);
 
@@ -49,6 +51,11 @@ ZT.Map = function(options){
 
     this.regionsModels = new RegionCollection();
 
+    this.regionsModels.once('sync',function(){
+        //after the first sync, trigger the loaded event
+       that.trigger('loaded');
+    });
+
     this.regionsModels.on('add',function(regionModel){
         regionModel.tiles.each(function(tileModel){
             that.addTile(tileModel);
@@ -59,7 +66,13 @@ ZT.Map = function(options){
 
 };
 
-ZT.Map.prototype.getTileWorldXY = function(worldX, worldY){
+ZT.Map.prototype.getTileByTileXY = function(tileX, tileY){
+
+    return this.tiles[tileX + ":" + tileY];
+
+};
+
+ZT.Map.prototype.getTileByWorldXY = function(worldX, worldY){
 
     var tileX = Math.floor(worldX/this.tileSize);
     var tileY = Math.floor(worldY/this.tileSize);
@@ -68,7 +81,7 @@ ZT.Map.prototype.getTileWorldXY = function(worldX, worldY){
 
 };
 
-ZT.Map.prototype.getSlotWorldXY = function(worldX, worldY){
+ZT.Map.prototype.getTileSlotByWorldXY = function(worldX, worldY){
 
     var tileX = Math.floor(worldX/this.tileSize);
     var tileY = Math.floor(worldY/this.tileSize);
@@ -76,8 +89,7 @@ ZT.Map.prototype.getSlotWorldXY = function(worldX, worldY){
     var slotX = Math.floor((worldX-tileX*this.tileSize) / this.slotSize);
     var slotY = Math.floor((worldY-tileY*this.tileSize) / this.slotSize);
 
-    return tileX + ":" + tileY + ":" + (slotX+3*slotY);
-
+    return (slotX+this.tileSlots*slotY);
 };
 
 ZT.Map.prototype.addTile = function(tileModel){

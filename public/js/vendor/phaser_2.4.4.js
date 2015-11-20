@@ -90891,7 +90891,7 @@ Phaser.Tilemap.prototype = {
     * @param {boolean} [nonNull=false] - If true getTile won't return null for empty tiles, but a Tile object with an index of -1.
     * @return {Phaser.Tile} The tile at the given coordinates.
     */
-    getTileWorldXY: function (x, y, tileWidth, tileHeight, layer, nonNull) {
+    getTileByWorldXY: function (x, y, tileWidth, tileHeight, layer, nonNull) {
 
         if (tileWidth === undefined) { tileWidth = this.tileSize; }
         if (tileHeight === undefined) { tileHeight = this.tileSize; }

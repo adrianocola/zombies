@@ -27,6 +27,8 @@ ZT.Game = function(options){
     this.tileSize = this.options.tileSize;
     this.slotSize = this.options.slotSize;
 
+    this.tileSlots = this.tileSize/this.slotSize;
+
     this.totalSize = 2*this.visibleSize-1; //total number of tiles to show
     this.width = this.totalSize*this.tileSize; //total game width (in px)
     this.height = this.totalSize*this.tileSize; //total game height (in px)
@@ -123,10 +125,16 @@ ZT.Game = function(options){
         game.phaser.world.setBounds(initX,initY,game.width,game.height);
 
         game.backgroundLayer = game.phaser.add.group();
+        game.gridLayer = game.phaser.add.group();
         game.shadowLayer = game.phaser.add.group();
-        game.constructionLayer = game.phaser.add.group();
         game.thingLayer = game.phaser.add.group();
+        game.constructionLayer = game.phaser.add.group();
         game.hudLayer = game.phaser.add.group();
+
+        game.graphics = game.phaser.make.graphics();
+        game.graphics.lineStyle(1, 0x888888, 1);
+        game.graphics.alpha = 0.3;
+        game.gridLayer.add(game.graphics);
 
         game.phaser.stage.backgroundColor = '#000000';
 
@@ -150,7 +158,11 @@ ZT.Game = function(options){
         //    var thing = new ZT.Thing({x: _.random(-area,area), y:_.random(-area,area), game:game, image:"zombie", shadow: false, goback: true});
         //}
 
-        game.player = new ZT.Thing({x: game.playerModel.x * game.tileSize, y: game.playerModel.y * game.tileSize, game:game, image:"walking", shadow: true, animation: 'walk'});
+        //once the map finished loading tiles, add user
+        game.map.once('loaded',function(){
+            game.player = new ZT.Thing({tile: game.map.getTileByTileXY(game.playerModel.x,game.playerModel.y), slot: game.playerModel.slot, game:game, image:"walking", animation: 'walk'});
+            game.phaser.camera.follow(game.player.sprite);
+        });
 
         game.phaser.input.addMoveCallback(function(){
             game.marker.x = game.phaser.math.snapToFloor(game.phaser.input.activePointer.worldX, game.slotSize);
@@ -158,50 +170,46 @@ ZT.Game = function(options){
         }, this);
 
         game.phaser.input.onDown.add(function(){
-            var markerTile = game.map.getTileWorldXY(game.marker.x,game.marker.y);
-            console.log(game.map.getSlotWorldXY(game.marker.x,game.marker.y));
-            var playerTile = game.map.getTileWorldXY(game.player.sprite.x,game.player.sprite.y);
+            var markerTile = game.map.getTileByWorldXY(game.marker.x,game.marker.y);
+            var slot = game.map.getTileSlotByWorldXY(game.marker.x,game.marker.y);
+            var playerTile = game.map.getTileByWorldXY(game.player.sprite.x,game.player.sprite.y);
 
-            game.player.moveToXY(game.marker.x,game.marker.y);
-            game.moveRelative(markerTile.x-playerTile.x,markerTile.y-playerTile.y);
+            game.player.moveToXY(game.marker.x+game.slotSize/2,game.marker.y+game.slotSize/2);
+            game.moveRelative(markerTile.x-playerTile.x,markerTile.y-playerTile.y,slot);
 
         }, this);
 
         game.cursors = game.phaser.input.keyboard.createCursorKeys();
 
-        game.phaser.camera.x = game.player.sprite.x;
-        game.phaser.camera.y = game.player.sprite.y;
+        //game.phaser.camera.x = game.player.sprite.x + game.tileSize;
+        //game.phaser.camera.y = game.player.sprite.y + game.tileSize;
 
-        //game.phaser.camera.follow(game.player.sprite);
+
         //game.phaser.camera.deadzone = new Phaser.Rectangle(game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.4, game.visibleSize*game.tileSize*0.2, game.visibleSize*game.tileSize*0.2);
 
     }
 
     function update(){
 
-        game.phaser.physics.arcade.collide(game.player.sprite, game.thingLayer, function(){
+        if(game.player){
+            game.phaser.physics.arcade.collide(game.player.sprite, game.thingLayer, function(){
 
-        }, null, this);
-
-        game.phaser.physics.arcade.collide(game.player.sprite, game.constructionLayer, function(){
-
-        }, null, this);
-
-        if (game.cursors.left.isDown)
-        {
-            game.phaser.camera.x -= 4;
+            }, null, this);
         }
-        else if (game.cursors.right.isDown)
-        {
+
+        //game.phaser.physics.arcade.collide(game.player.sprite, game.constructionLayer, function(){
+        //
+        //}, null, this);
+
+        if (game.cursors.left.isDown){
+            game.phaser.camera.x -= 4;
+        }else if (game.cursors.right.isDown){
             game.phaser.camera.x += 4;
         }
 
-        if (game.cursors.up.isDown)
-        {
+        if (game.cursors.up.isDown){
             game.phaser.camera.y -= 4;
-        }
-        else if (game.cursors.down.isDown)
-        {
+        }else if (game.cursors.down.isDown){
             game.phaser.camera.y += 4;
         }
 
@@ -220,8 +228,8 @@ ZT.Game = function(options){
 
 };
 
-ZT.Game.prototype.moveRelative = function(relX, relY){
-    game.playerModel.moveTo(game.playerModel.x + relX, game.playerModel.y + relY);
+ZT.Game.prototype.moveRelative = function(relX, relY, slot){
+    game.playerModel.moveTo(game.playerModel.x + relX, game.playerModel.y + relY, slot);
     game.map.moveRelative(relX, relY);
     game.phaser.world.setBounds(game.phaser.world.bounds.x + (relX * this.tileSize),game.phaser.world.bounds.y + (relY * this.tileSize),game.width,game.height);
 };
