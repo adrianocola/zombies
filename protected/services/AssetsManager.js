@@ -61,7 +61,16 @@ var AssetsManager = {
 
         });
 
-    }
+    },
+    getThingTypesList: function(cb){
+        if(!cb) return;
+
+        jf.readFile(ASSETS_PATH + '/things.json',function(err,things){
+            cb(err,things && _.values(things.things));
+        });
+
+    },
+
 }
 
 module.exports = AssetsManager;

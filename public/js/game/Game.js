@@ -34,6 +34,7 @@ ZT.Game = function(options){
     this.height = this.totalSize*this.tileSize; //total game height (in px)
 
     this.tileTypes = new TileTypesCollection();
+    this.thingTypes = new ThingTypesCollection();
     this.playerModel = new PlayerModel();
 
     var game = this;
@@ -44,6 +45,9 @@ ZT.Game = function(options){
         async.parallel([
             function(cb){
                 game.tileTypes.fetch({success: cb});
+            },
+            function(cb){
+                game.thingTypes.fetch({success: cb});
             },
             function(cb){
                 game.playerModel.fetch({success: cb});
@@ -153,14 +157,9 @@ ZT.Game = function(options){
         game.marker.drawRect(0, 0, game.slotSize, game.slotSize);
         game.hudLayer.add(game.marker);
 
-        //var area = 600;
-        //for(var i=0;i<1000;i++){
-        //    var thing = new ZT.Thing({x: _.random(-area,area), y:_.random(-area,area), game:game, image:"zombie", shadow: false, goback: true});
-        //}
-
         //once the map finished loading tiles, add user
         game.map.once('loaded',function(){
-            game.player = new ZT.Thing({tile: game.map.getTileByTileXY(game.playerModel.x,game.playerModel.y), slot: game.playerModel.slot, game:game, image:"walking", animation: 'walk'});
+            game.player = new ZT.Thing({tile: game.map.getTileByTileXY(game.playerModel.x,game.playerModel.y), slot: game.playerModel.slot, model: game.playerModel, game:game, image:"walking", animation: 'walk'});
             game.phaser.camera.follow(game.player.sprite);
         });
 
@@ -192,9 +191,7 @@ ZT.Game = function(options){
     function update(){
 
         if(game.player){
-            game.phaser.physics.arcade.collide(game.player.sprite, game.thingLayer, function(){
-
-            }, null, this);
+            game.phaser.physics.arcade.collide(game.player.sprite, game.thingLayer);
         }
 
         //game.phaser.physics.arcade.collide(game.player.sprite, game.constructionLayer, function(){

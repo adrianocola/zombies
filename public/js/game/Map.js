@@ -51,16 +51,16 @@ ZT.Map = function(options){
 
     this.regionsModels = new RegionCollection();
 
+    this.regionsModels.on('sync',function(){
+        //update visible tiles and cached tiles
+        //first time must be sync (because of the loaded event bellow)
+        this.updateVisibleRegions(_.size(this.lastVisibleRegions)===0);
+    },this);
+
     this.regionsModels.once('sync',function(){
         //after the first sync, trigger the loaded event
-       that.trigger('loaded');
-    });
-
-    this.regionsModels.on('add',function(regionModel){
-        regionModel.tiles.each(function(tileModel){
-            that.addTile(tileModel);
-        });
-    });
+        this.trigger('loaded');
+    },this);
 
     this.centerTo(this.centerX,this.centerY);
 
@@ -141,6 +141,14 @@ ZT.Map.prototype.centerTo = function(toX,toY){
     this.firstRegionY = this.centerRegionY-2;
     this.lastRegionY = this.centerRegionY+2;
 
+    //list of visible regions (X and V above)
+    this.lastVisibleRegions = this.visibleRegions || {};
+    this.visibleRegions = {};
+
+    //list of cached regions (C above)
+    this.lastCachedRegions = this.cachedRegions || {};
+    this.cachedRegions = {};
+
     var regions = [];
 
     for(var x = this.firstRegionX; x <= this.lastRegionX; x++){
@@ -151,6 +159,12 @@ ZT.Map.prototype.centerTo = function(toX,toY){
                 || x===this.lastRegionX && y===this.firstRegionY
                 || x===this.lastRegionX && y===this.lastRegionY){
                 continue;
+            }
+
+            if(Math.abs(x-this.centerRegionX)<=1 && Math.abs(y-this.centerRegionY)<=1){
+                this.visibleRegions[RegionModel.generateId(x,y)] = true;
+            }else{
+                this.cachedRegions[RegionModel.generateId(x,y)] = true;
             }
 
             //check if already fetched region
@@ -173,6 +187,48 @@ ZT.Map.prototype.centerTo = function(toX,toY){
 
 };
 
+/**
+ * Show the new tiles that are now visible and destroy the tiles
+ * that are not visible. Also removes unnused cached regions
+ * @param sync if the code should run sync or async
+ */
+ZT.Map.prototype.updateVisibleRegions = function(sync){
+
+    var that = this;
+
+    var toRemove = [];
+
+    var tasks = [];
+
+    var method = sync? async.parallel:async.series;
+
+    this.regionsModels.each(function(regionModel){
+        tasks.push(function(cb){
+            if(that.visibleRegions[regionModel.getId()] && !that.lastVisibleRegions[regionModel.getId()]){
+                regionModel.tiles.each(function(tileModel){
+                    that.addTile(tileModel);
+                });
+            }else if(that.lastVisibleRegions[regionModel.getId()] && !that.visibleRegions[regionModel.getId()]){
+                regionModel.tiles.each(function(tileModel){
+                    that.getTileByTileXY(tileModel.x,tileModel.y).destroy();
+                });
+            }
+
+            if(that.lastCachedRegions[regionModel.getId()] && !that.cachedRegions[regionModel.getId()] && !that.visibleRegions[regionModel.getId()]){
+                toRemove.push(regionModel);
+            }
+
+            setTimeout(cb,sync?0:50);
+
+        });
+    });
+
+    method(tasks,function(){
+        that.regionsModels.remove(toRemove);
+    });
+
+};
+
 ZT.Map.prototype.moveRelative = function(relX, relY){
 
     if(!relX && !relY) return;
@@ -181,70 +237,6 @@ ZT.Map.prototype.moveRelative = function(relX, relY){
     this.centerY = this.centerY+relY;
 
     return this.centerTo(this.centerX,this.centerY);
-    //TODO remove tiles that are out of the player vision (below)
-
-    //var absX = Math.abs(relX);
-    //var absY = Math.abs(relY);
-    //
-    //var isRight = relX>0;
-    //var isBottom = relY>0;
-    //
-    //for(var x = 0; x < absX; x++){
-    //    for(var y = this.minY + this.centerY ; y <= this.maxY + this.centerY ; y++){
-    //        //if is moving right, should remove from the left side
-    //        var mapX = this.centerX + (isRight?this.minX+x:this.maxX-x);
-    //
-    //        var tile = this.tiles[mapX + ":" + y];
-    //        delete this.tiles[mapX + ":" + y];
-    //        if(tile){
-    //            tile.destroy();
-    //            this.tilesModels.remove(tile.tileModel);
-    //        }
-    //    }
-    //}
-    //
-    //for(var y = 0; y < absY; y++){
-    //    for(var x = this.centerX - this.rangeX ; x <= this.maxX + this.centerX ; x++){
-    //        //if is moving down, should remove from the top side
-    //        var mapY = this.centerY + (isBottom?this.minY+y:this.maxY-y);
-    //
-    //        var tile = this.tiles[x + ":" + mapY];
-    //        delete this.tiles[x + ":" + mapY];
-    //        if(tile){
-    //            tile.destroy();
-    //            this.tilesModels.remove(tile.tileModel);
-    //        }
-    //    }
-    //}
-    //
-    //var centerTile = this.tiles[(this.centerX+relX) + ":" + (this.centerY+relY)];
-    //this.centerX = centerTile.x;
-    //this.centerY = centerTile.y;
-    //
-    //if(relX){
-    //    var x = isRight?this.maxX:this.minX;
-    //    var topLeft1 = [this.centerX  + x - relX +1, this.minY-relY + this.centerY];
-    //    var bottomRight1 = [this.centerX + x, this.maxY-relY + this.centerY];
-    //}
-    //if(relY){
-    //    var y = isBottom?this.maxY:this.minY;
-    //    var topLeft2 = [this.minX-relX + this.centerX, this.centerY + y - relY + 1];
-    //    var bottomRight2 = [this.maxX-relX + this.centerX, this.centerY + y];
-    //}
-    //
-    //if(relX && relY){
-    //    //in case of a diagonal move adjust the rects
-    //    topLeft1[1] += relY;
-    //    bottomRight1[1] += relY;
-    //    topLeft2[0] += relX;
-    //    bottomRight2[0] += relX;
-    //
-    //    this.tilesModels.fetchInTwoRects([ topLeft1, bottomRight1 ], [ topLeft2 ,bottomRight2 ]);
-    //}else if(relX){
-    //    this.tilesModels.fetchInRect([ topLeft1, bottomRight1 ]);
-    //}else if(relY) {
-    //    this.tilesModels.fetchInRect([topLeft2, bottomRight2]);
-    //}
 
 };
 

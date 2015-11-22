@@ -5,9 +5,6 @@ var ThingModel = Backbone.Model.extend({
 
     initialize: function(attributes){
 
-        //easy shortcut to the thing's type
-        this.type = ZT.thingTypes.get(attributes.type);
-
     }
 
 });

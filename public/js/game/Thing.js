@@ -12,7 +12,8 @@ ZT.Thing = function (options) {
         animation: undefined, //animation used when moving
         tile: undefined, //parent tile
         slot: 0,//tile slot position
-        size: 16//slot size in pixels
+        size: 16,//slot size in pixels
+        goback: false //if the thing should go back to its original position if moved
     },options || {});
 
     this.game = this.options.game;
@@ -22,6 +23,8 @@ ZT.Thing = function (options) {
     
     this.mapX = this.tile.mapX + Math.floor(this.slot%3)*this.options.size + this.options.size/2;
     this.mapY = this.tile.mapY + Math.floor(this.slot/3)*this.options.size + this.options.size/2;
+
+    var thingType = this.game.thingTypes.get(this.model.get('type'));
 
     var image = this.game.phaser.cache.getImage(this.options.image);
     var ratio = this.game.slotSize/image.height;
@@ -45,6 +48,7 @@ ZT.Thing = function (options) {
     this.sprite.body.allowRotation = false;
 
     this.game.thingLayer.add(this.sprite);
+    this.game.count++;
 
     this.sprite.update = function(){
 
@@ -76,13 +80,13 @@ ZT.Thing = function (options) {
             }
         //if nothing touching anything and far away from position, move to position
         }else if(that.options.goback && !that.goback){
-            if(Math.abs(that.x - that.sprite.x) > 20 || Math.abs(that.y - that.sprite.y) > 20){
-                var duration = Math.sqrt( Math.pow(that.sprite.x-that.x,2) + Math.pow(that.sprite.y-that.y,2))/96 * 1000;
-                that.sprite.rotation = that.game.phaser.physics.arcade.moveToXY(that.sprite, that.x, that.y, 96, duration);
+            if(Math.abs(that.mapX - that.sprite.x) > 20 || Math.abs(that.mapY - that.sprite.y) > 20){
+                var duration = Math.sqrt( Math.pow(that.sprite.x-that.mapX,2) + Math.pow(that.sprite.y-that.mapY,2))/96 * 1000;
+                that.sprite.rotation = that.game.phaser.physics.arcade.moveToXY(that.sprite, that.mapX, that.mapY, 96, duration);
                 that.sprite.body.velocity.x = 0;
                 that.sprite.body.velocity.y = 0;
                 that.sprite.body.enable = false;
-                that.goback = that.game.phaser.add.tween(that.sprite).to( { x: that.x, y:that.y }, duration, Phaser.Easing.Linear.None, true);
+                that.goback = that.game.phaser.add.tween(that.sprite).to( { x: that.mapX, y:that.mapY }, duration, Phaser.Easing.Linear.None, true);
                 that.goback.onComplete.add(function () {
                     delete that.goback;
                     that.sprite.body.enable = true;
@@ -90,7 +94,7 @@ ZT.Thing = function (options) {
             }
         }
 
-    }
+    };
 
 };
 
@@ -104,5 +108,14 @@ ZT.Thing.prototype.moveToXY = function(x,y,speed){
 ZT.Thing.prototype.update = function() {
 
 
+
+};
+
+ZT.Thing.prototype.destroy = function() {
+
+    if(this.shadow) this.shadow.destroy(true);
+    if(this.sprite) this.sprite.destroy(true);
+
+    this.game.count--;
 
 };

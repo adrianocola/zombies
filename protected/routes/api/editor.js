@@ -58,23 +58,24 @@ app.get('/api/editor/resetWorld', function (req, res) {
             return x <= toX && y <= toY;
         },function(done){
 
-            var hmset = [];
-
             region = new app.models.Region({
                 pos: [x, y]
             });
 
             for(var i=0;i<size;i++){
                 for(var j=0;j<size;j++) {
-                    var tile = {type: 1, pos: [(x*size)+i,(y*size)+j]};
+                    var tile = {type: 1, pos: [(x*size)+i,(y*size)+j],things: {}};
+                    var tc = _.random(0,3);
+                    while(tc>0){
+                        tile.things[_.random(0,9)] = {
+                            "name" : "zombie",
+                            "type" : 2
+                        };
+                        tc--;
+                    }
                     region.tiles.push(tile);
-                    hmset.push(i*size+j);
-                    hmset.push(tile);
-                    //app.redis.set(tile.pos[0] + "_" + tile.pos[1],tile);
                 }
             }
-
-            app.redis.hmset(x+"_"+y,hmset);
 
             region.save(done);
 

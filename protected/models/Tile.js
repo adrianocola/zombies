@@ -3,7 +3,7 @@ var thing = require('./Thing.js');
 var TileSchema = app.mongoose.Schema({
     _id: false,
     pos: [Number],
-    things: [thing.schema],
+    things: {},
     type:{ type: Number, required: true},
     face: Number // 0 = UP; 1 = RIGHT; 2 = DOWN, 3 = LEFT
 });
