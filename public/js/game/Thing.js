@@ -48,7 +48,6 @@ ZT.Thing = function (options) {
     this.sprite.body.allowRotation = false;
 
     this.game.thingLayer.add(this.sprite);
-    this.game.count++;
 
     this.sprite.update = function(){
 
@@ -115,7 +114,5 @@ ZT.Thing.prototype.destroy = function() {
 
     if(this.shadow) this.shadow.destroy(true);
     if(this.sprite) this.sprite.destroy(true);
-
-    this.game.count--;
 
 };
