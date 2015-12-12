@@ -1,4 +1,32 @@
 
+//ESTRUTURAR MELHOR EVENTOS (considerar um esquema de RPC)
+//IMPLEMENTAR CALLBACK NO MOVEPLAYER DO MODEL PARA VALIDAR SE MOVIMENTO DEU CERTOo
+//MELHOR METODO DE MOVETO DA THING PARA PASSAR UM SLOT!
+
+//Event structure
+// actor: user that generated event (or system)
+// event: event type/name
+// id: event id
+// data: event data
+
+
+//Map events:
+// droped thing on map
+// picked up thing from map
+// thing destroyed
+// thing moved
+// thing executed animation
+// player moved (slow, normal, fast)
+// player died
+// player showed in region
+// player left region
+// player rotated (?)
+// player attacked
+// zombie moved
+// zombie attacked
+// zombie died
+
+
 
 //
 //X e Y devem sempre fazer referencia a posição no map (em pixels)
@@ -35,7 +63,13 @@ ZT.Game = function(options){
 
     this.tileTypes = new TileTypesCollection();
     this.thingTypes = new ThingTypesCollection();
+    this.playersModels = new PlayerCollection();
     this.playerModel = new PlayerModel();
+    this.players = {};
+
+    this.events = new ZT.Events({game: this});
+    console.log(this.events);
+    this.events.handleEvents();
 
     var game = this;
 
@@ -51,12 +85,21 @@ ZT.Game = function(options){
             },
             function(cb){
                 game.playerModel.fetch({success: cb});
+            },
+            function(cb){
+                $.ajax('/api/players_around',{success: function(data){
+                    for(var i=0;i<data.length;i++){
+                        game.playersModels.add(data[i]);
+                    }
+                }})
             }
         ], boot);
 
     };
 
     function boot(){
+
+        game.playersModels.add(game.playerModel);
 
         var game_config = {
             width: game.visibleSize*game.tileSize,
@@ -132,6 +175,7 @@ ZT.Game = function(options){
         game.gridLayer = game.phaser.add.group();
         game.shadowLayer = game.phaser.add.group();
         game.thingLayer = game.phaser.add.group();
+        game.playerLayer = game.phaser.add.group();
         game.constructionLayer = game.phaser.add.group();
         game.hudLayer = game.phaser.add.group();
 
@@ -159,8 +203,17 @@ ZT.Game = function(options){
 
         //once the map finished loading tiles, add user
         game.map.once('loaded',function(){
-            game.player = new ZT.Thing({tile: game.map.getTileByTileXY(game.playerModel.x,game.playerModel.y), slot: game.playerModel.slot, model: game.playerModel, game:game, image:"walking", animation: 'walk'});
-            game.phaser.camera.follow(game.player.sprite);
+            game.player = new ZT.Thing({tile: game.map.getTileByTileXY(game.playerModel.x,game.playerModel.y), slot: game.playerModel.slot, model: game.playerModel, game:game, image:"walking", animation: 'walk',goback: true});
+            //game.phaser.camera.follow(game.player.sprite);
+            game.playerLayer.add(game.player.sprite);
+
+            game.playersModels.each(function(playerModel){
+                if(playerModel.id === game.playerModel.id) return;
+                var player = new ZT.Thing({tile: game.map.getTileByTileXY(playerModel.x,playerModel.y), slot: playerModel.slot, model: playerModel, game:game, image:"walking", animation: 'walk',goback: true});
+                game.playerLayer.add(player.sprite);
+                game.players[playerModel.id] = player;
+            });
+
         });
 
         game.phaser.input.addMoveCallback(function(){
@@ -191,7 +244,7 @@ ZT.Game = function(options){
     function update(){
 
         if(game.player){
-            game.phaser.physics.arcade.collide(game.player.sprite, game.thingLayer);
+            game.phaser.physics.arcade.collide(game.playerLayer, game.thingLayer);
         }
 
         //game.phaser.physics.arcade.collide(game.player.sprite, game.constructionLayer, function(){

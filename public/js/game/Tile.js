@@ -32,12 +32,18 @@ ZT.Tile.prototype.genId = function(){
     return ZT.Tile.prototype.unique_id_gen;
 };
 
+ZT.Tile.prototype.getSlotAbsoluteXY = function(slot){
+    var x = this.mapX + Math.floor(slot%3)*this.game.slotSize + this.game.slotSize/2;
+    var y = this.mapY + Math.floor(slot/3)*this.game.slotSize + this.game.slotSize/2;
+    return [x,y];
+};
+
 ZT.Tile.prototype.addThing = function(thing,pos){
     this.things[pos] = thing;
 };
 
 ZT.Tile.prototype.removeThing = function(pos){
-    this.things[pos] = undefined;;
+    this.things[pos] = undefined;
 };
 
 ZT.Tile.prototype.draw = function(){
@@ -91,8 +97,8 @@ ZT.Tile.prototype.draw = function(){
     this.game.graphics.drawRect(this.mapX, this.mapY, this.options.size, this.options.size);
     //this.game.backgroundLayer.add(this.box);
 
-    //this.text = this.game.phaser.make.text(this.mapX + 18, this.mapY + 19, this.x + ',' + this.y, {font: "7pt Arial", fill: "#aaaaaa"});
-    //this.game.gridLayer.add(this.text);
+    this.text = this.game.phaser.make.text(this.mapX + 18, this.mapY + 19, this.x + ',' + this.y, {font: "7pt Arial", fill: "#aaaaaa"});
+    this.game.gridLayer.add(this.text);
 
     this.model.things.each(function(thingModel){
         if(thingModel) this.things.push(new ZT.Thing({tile: this, slot: thingModel.get('slot'), model: thingModel, game: this.game, image:"zombie", goback: true, noupdate: true}));

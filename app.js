@@ -6,6 +6,15 @@ var _ = GLOBAL._ = require('lodash');
 var express = require('express');
 var app = GLOBAL.app = express();
 var server = require('http').Server(app);
+var shortId = app.shortId = require('shortId');
+
+//**********
+//   LOG
+//**********
+var winston = app.log = require('winston');
+winston.remove(winston.transports.Console);
+winston.add(winston.transports.Console, {colorize: true});
+winston.level = 'info';
 
 //**********
 //   REDIS
@@ -36,6 +45,15 @@ var multer  = require('multer');
 var session = require('express-session');
 var RedisStore = require('connect-redis')(session);
 
+var sessionStore = session({
+    name: "session",
+    store: new RedisStore({client: redis,prefix: 'ZTsess:'}),
+    secret: 'zombietown',
+    saveUninitialized: true,
+    resave: true,
+    cookie: { maxAge: 24*60*60*1000 } //1 day
+});
+
 function compile_nib(str, path) {
     return stylus(str)
         .set('filename', path)
@@ -47,14 +65,9 @@ app.set('views', './protected/views');
 app.set('view engine', 'jade');
 app.locals.basedir = './protected/views';
 
-app.use(session({
-    name: "session",
-    store: new RedisStore({client: redis,prefix: 'ZTsess:'}),
-    secret: 'zombietown',
-    saveUninitialized: true,
-    resave: true,
-    cookie: { maxAge: 24*60*60*1000 } //1 day
-}));
+
+
+app.use(sessionStore);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(multer());
@@ -72,6 +85,7 @@ app.shared = require('./shared');
 //**********
 //    APP
 //**********
+app.consts = require('./protected/config/consts');
 app.services = require('./protected/services');
 app.models = require('./protected/models');
 app.routes = require('./protected/routes');
@@ -79,9 +93,29 @@ app.routes = require('./protected/routes');
 //**********
 // SOCKET.io
 //**********
-var io = app.io = require('socket.io')(server);
 
+var getSession = function(handshake,cb){
+    cb = cb || function(){};
+    sessionStore(handshake, {}, function (err) {
+        cb(err,handshake.session);
+    });
+}
+
+var io = app.io = require('socket.io')(server);
+io.adapter(require('socket.io-redis')(redis));
 io.on('connection', function (socket) {
+
+    socket.data = {};
+
+    socket.on(app.shared.Events.ENTER_REGION,function(region_id){
+        app.log.debug("ENTER REGION: " + region_id);
+        socket.join(region_id);
+    });
+
+    socket.on(app.shared.Events.LEAVE_REGION,function(region_id){
+        app.log.debug("LEAVE REGION: " + region_id);
+        socket.leave(region_id);
+    });
 
 });
 

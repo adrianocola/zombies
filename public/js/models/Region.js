@@ -32,10 +32,12 @@ var RegionCollection = Backbone.Collection.extend({
     },
 
     onAdd: function(region){
+        socket.emit(ZT.Events.ENTER_REGION,region.getId());
         this.regionMap[region.getId()] = region;
     },
 
     onRemove: function(region){
+        socket.emit(ZT.Events.LEAVE_REGION,region.getId());
         delete this.regionMap[region.getId()];
     },
 

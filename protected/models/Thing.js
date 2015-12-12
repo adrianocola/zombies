@@ -7,6 +7,7 @@
 var ThingSchema = app.mongoose.Schema({
     name: String,
     type: {type: String}, //player,zombie,item,etc
+    entity: {type: String, default: 'Thing'},
     size: Number //1 small, 2 medium, 3 big
 });
 

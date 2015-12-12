@@ -1,6 +1,4 @@
-/**
- * PlayerModeal always treats x and y like the real world x and y
- */
+
 var PlayerModel = Backbone.Model.extend({
 
     idAttribute: '_id',
@@ -14,6 +12,7 @@ var PlayerModel = Backbone.Model.extend({
     initialize: function(){
 
         this.on('change',this.updatePosition);
+        this.updatePosition();
 
     },
 
@@ -27,6 +26,8 @@ var PlayerModel = Backbone.Model.extend({
         $.ajax(this.urlRoot + '/move',{type: "POST", data: {x: x, y: y, slot: slot || 0}, success: function(){
             that.set('pos',[x,y]);
             that.set('slot',slot);
+        },error: function(){
+
         }});
 
     },
@@ -39,4 +40,10 @@ var PlayerModel = Backbone.Model.extend({
         }
     }
 
+});
+
+var PlayerCollection = Backbone.Collection.extend({
+    model: PlayerModel,
+
+    url: '/api/player/'
 });

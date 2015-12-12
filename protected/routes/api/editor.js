@@ -8,13 +8,11 @@ app.get('/api/editor/resetWorld', function (req, res) {
         , 'Transfer-Encoding': 'chunked'
     });
 
-    var fromX = parseInt(req.query.fromX || -5);
-    var toX = parseInt(req.query.toX || 5);
-    var fromY = parseInt(req.query.fromY || -5);
-    var toY = parseInt(req.query.toY || 5);
-    var size = parseInt(req.query.size || 11);
+    var toX = parseInt(req.query.x || 10);
+    var toY = parseInt(req.query.y || 10);
+    var size = parseInt(req.query.size || app.consts.regionSize);
 
-    var total = (toX - fromX + 1) * (toY - fromY + 1);
+    var total = (toX + 1) * (toY + 1);
 
     res.write("Creating " + total + " regions ( " + (total*(11*11)) + "tiles)<br>");
 
@@ -24,10 +22,10 @@ app.get('/api/editor/resetWorld', function (req, res) {
             world = new app.models.World({name: "zombietown"});
         }
 
-        world.top = fromY;
+        world.top = 0;
         world.right = toX;
         world.bottom = toY;
-        world.left = fromX;
+        world.left = 0;
 
         world.save();
 
@@ -51,8 +49,9 @@ app.get('/api/editor/resetWorld', function (req, res) {
         },30000);
 
         var region;
-        var x = fromX;
-        var y = fromY;
+
+        var x = 0;
+        var y = 0;
 
         async.whilst(function(){
             return x <= toX && y <= toY;
@@ -67,10 +66,10 @@ app.get('/api/editor/resetWorld', function (req, res) {
                     var tile = {type: 1, pos: [(x*size)+i,(y*size)+j],things: {}};
                     var tc = _.random(0,3);
                     while(tc>0){
-                        tile.things[_.random(0,9)] = {
+                        tile.things[_.random(0,9)] = new app.models.Thing({
                             "name" : "zombie",
                             "type" : 2
-                        };
+                        });
                         tc--;
                     }
                     region.tiles.push(tile);
@@ -95,7 +94,7 @@ app.get('/api/editor/resetWorld', function (req, res) {
 
             if(y>toY){
                 x++;
-                y=fromY;
+                y=0;
             }
 
         },function(err){
@@ -114,57 +113,7 @@ app.get('/api/editor/regions', function (req, res) {
 
     var start = new Date();
 
-    var query = {};
-
-    if(req.query.rect){
-        query.pos = {
-            $geoWithin : {
-                $box : JSON.parse(req.query.rect)
-            }
-        }
-    }else if(req.query.rect1 && req.query.rect2){
-        query.$or = [
-            {
-                pos: {
-                    $geoWithin: {
-                        $box: JSON.parse(req.query.rect1)
-                    }
-                }
-            },
-            {
-                pos: {
-                    $geoWithin: {
-                        $box: JSON.parse(req.query.rect2)
-                    }
-                }
-            }
-        ]
-    }else if(req.query.point){
-        var point = JSON.parse(req.query.point);
-        query.pos = {
-            $geoWithin : {
-                $box : [point, point]
-            }
-        }
-
-        //poor performance! use rect when possible!
-    }else if(req.query.points){
-        query.$or = [];
-
-        var points = JSON.parse(req.query.points);
-
-        for(var i=0; i<points.length; i++){
-            query.$or.push(
-                {
-                    pos: {
-                        $geoWithin: {
-                            $box : [points[i], points[i]]
-                        }
-                    }
-                }
-            );
-        }
-    }
+    var query = {pos: {$in: JSON.parse(req.query.points)}};
 
     //avoid empty search error
     if(query.$or && query.$or.length===0) return res.json([]);

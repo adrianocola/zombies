@@ -1,0 +1,14 @@
+extends /templates/main
+
+block head
+   title ZombieTown!
+
+block head_css
+   link(rel='stylesheet', href='/css/index.css')
+
+block body
+   form(method="post")
+      input(type="text" name="username",placeholder="username")
+      button(type="submit") LOGIN
+
+
