@@ -63,15 +63,29 @@ app.get('/api/editor/resetWorld', function (req, res) {
 
             for(var i=0;i<size;i++){
                 for(var j=0;j<size;j++) {
-                    var tile = {type: 1, pos: [(x*size)+i,(y*size)+j],things: {}};
+                    var tile = new app.models.Tile({type: 1, pos: [(x*size)+i,(y*size)+j],slots:{}});
                     var tc = _.random(0,3);
                     while(tc>0){
-                        tile.things[_.random(0,9)] = new app.models.Thing({
-                            "name" : "zombie",
-                            "type" : 2
-                        });
+
+                        tile.slots[_.random(0,9)] = {
+                            floor: [],
+                            stand: new app.models.Thing({
+                                "name" : "zombie",
+                                "type" : 2
+                            })
+                        };
+
                         tc--;
                     }
+                    for(var k=0;k<9;k++){
+                        if(!tile.slots[k]){
+                            tile.slots[k] = {
+                                floor: [],
+                                stand: undefined
+                            }
+                        }
+                    }
+
                     region.tiles.push(tile);
                 }
             }

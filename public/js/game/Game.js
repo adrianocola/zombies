@@ -203,7 +203,7 @@ ZT.Game = function(options){
 
         //once the map finished loading tiles, add user
         game.map.once('loaded',function(){
-            game.player = new ZT.Thing({tile: game.map.getTileByTileXY(game.playerModel.x,game.playerModel.y), slot: game.playerModel.slot, model: game.playerModel, game:game, image:"walking", animation: 'walk',goback: true});
+            game.player = new ZT.Thing({tile: game.map.getTileByTileXY(game.playerModel.x,game.playerModel.y), slot: game.playerModel.slot, model: game.playerModel, game:game, image:"walking", animation: 'walk'});
             //game.phaser.camera.follow(game.player.sprite);
             game.playerLayer.add(game.player.sprite);
 

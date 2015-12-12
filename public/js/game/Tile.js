@@ -100,8 +100,10 @@ ZT.Tile.prototype.draw = function(){
     this.text = this.game.phaser.make.text(this.mapX + 18, this.mapY + 19, this.x + ',' + this.y, {font: "7pt Arial", fill: "#aaaaaa"});
     this.game.gridLayer.add(this.text);
 
-    this.model.things.each(function(thingModel){
-        if(thingModel) this.things.push(new ZT.Thing({tile: this, slot: thingModel.get('slot'), model: thingModel, game: this.game, image:"zombie", goback: true, noupdate: true}));
+    this.model.slots.each(function(slotModel){
+        if(slotModel && slotModel.get("stand")){
+            this.things.push(new ZT.Thing({tile: this, slot: slotModel.get('slot'), model:  new ThingModel(slotModel.get("stand")), game: this.game, image:"zombie", goback: true, noupdate: true}));
+        }
     },this);
 
 };

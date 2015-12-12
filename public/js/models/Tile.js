@@ -8,10 +8,10 @@ var TileModel = Backbone.Model.extend({
     },
 
     initialize: function(attributes){
-        this.things = new ThingsCollection();
-        _.each(this.get('things'),function(value,key){
+        this.slots = new SlotsCollection();
+        _.each(this.get('slots'),function(value,key){
             value.slot = key;
-            this.things.add(value);
+            this.slots.add(value);
         },this);
 
         this.x = this.get("pos")[0];

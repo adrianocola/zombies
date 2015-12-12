@@ -24,30 +24,32 @@ RegionSchema.statics.findOneByPos = function (x, y, cb) {
     });
 };
 
-RegionSchema.statics.insertInEmptySlot = function (tileX, tileY, slot, entity, cb) {
+RegionSchema.statics.insertInEmptySlotStand = function (tileX, tileY, slot, entity, cb) {
 
     var regionPos = app.services.Map.regionPosByTile(tileX,tileY);
     var tileIndex = app.services.Map.tileArrayIndex(tileX,tileY);
+    var path = 'tiles.' + tileIndex + '.slots.' + slot + '.stand';
 
     var query = {pos: regionPos};
-    query['tiles.' + tileIndex + '.things.' + slot] = {$exists: false};
+    query[path] = {$exists: false};
 
     var update = {};
-    update['tiles.' + tileIndex + '.things.' + slot] = entity;
+    update[path] = entity;
 
     app.models.Region.update(query,update,cb);
 
 };
 
-RegionSchema.statics.clearSlot = function (tileX, tileY, slot, cb) {
+RegionSchema.statics.clearSlotStand = function (tileX, tileY, slot, cb) {
 
     var regionPos = app.services.Map.regionPosByTile(tileX,tileY);
     var tileIndex = app.services.Map.tileArrayIndex(tileX,tileY);
+    var path = 'tiles.' + tileIndex + '.slots.' + slot + '.stand';
 
     var query = {pos: regionPos};
 
     var update = {$unset: {}};
-    update.$unset['tiles.' + tileIndex + '.things.' + slot] = 1;
+    update.$unset[path] = 1;
 
     app.models.Region.update(query,update,cb);
 

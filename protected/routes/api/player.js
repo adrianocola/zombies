@@ -34,12 +34,12 @@ app.post('/api/player/move', function (req, res) {
     var prevRegionId = app.services.Map.regionIdByTile(prevTilePos[0],prevTilePos[1]);
 
     //add player to the new position (check if slot is empty)
-    app.models.Region.insertInEmptySlot(newTilePos[0],newTilePos[1],newSlot,{type: "Player",_id: req.session.player._id},function(err,c){
+    app.models.Region.insertInEmptySlotStand(newTilePos[0],newTilePos[1],newSlot,{type: "Player",_id: req.session.player._id},function(err, c){
         if(err) app.log.error("api/player/move-insertinemptyslot ",err);
         if(err || !c) return res.status(405).json("slot is already ocupied");
 
         //remove player from previous position
-        app.models.Region.clearSlot(prevTilePos[0],prevTilePos[1],prevSlot,function(err,c){
+        app.models.Region.clearSlotStand(prevTilePos[0],prevTilePos[1],prevSlot,function(err, c){
             if(err) app.log.error("api/player/move-clearslot",err);
 
             //update player positioning
