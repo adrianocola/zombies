@@ -16,22 +16,47 @@ ZT.Events.prototype.handleEvents = function(){
 
     var that = this;
 
-    socket.on(ZT.Events.PLAYER_MOVE,function(data){
-        if(that.events[data.id]) return;
-        if(that.game.playerModel.id === data.actor) return;
+    socket.on(ZT.shared.events.PLAYER_MOVE,function(event){
+        Logger.debug("Handling event " + ZT.shared.events.PLAYER_MOVE + ": " + event.id);
 
-        var player = that.game.players[data.player];
-        var tile = that.game.map.getTileByTileXY(data.to.pos[0],data.to.pos[1]);
-        var pos = tile.getSlotAbsoluteXY(data.to.slot);
-        player.moveToXY(pos[0],pos[1]);
+        if(that.events[event.id]) return;
+        if(that.game.playerModel.id === event.actor) return;
+
+        that.events[event.id] = true;
+
+        var fromRegionModel = that.game.map.getRegionByTileXY(event.data.from.x,event.data.from.y);
+        var toRegionModel = that.game.map.getRegionByTileXY(event.data.to.x,event.data.to.y);
+
+        //if moved in from uncached region, add player
+        if(!fromRegionModel){
+            Logger.debug(ZT.shared.events.PLAYER_MOVE + ": player moved in from uncached region");
+            var model = new PlayerModel(event.data.player);
+            var player = new ZT.Thing({tile: that.game.map.getTileByTileXY(model.get("x"),model.get("y")), slot: model.slot, model: model, game: that.game, image:"walking", animation: 'walk'});
+            that.game.playerLayer.add(player.sprite);
+            that.game.players[model.id] = player;
+        //if moved out from cached region, remove player
+        }else if(!toRegionModel){
+            Logger.debug(ZT.shared.events.PLAYER_MOVE + ": player moved from cached region");
+            var player = that.game.players[event.data.player._id];
+            delete that.game.players[player.model.id];
+            player.destroy();
+        //if have from and to, just move player
+        }else{
+            Logger.debug(ZT.shared.events.PLAYER_MOVE + ": player moved between cached regions");
+            var player = that.game.players[event.data.player._id];
+            var tile = that.game.map.getTileByTileXY(event.data.to.x,event.data.to.y);
+            var pos = tile.getSlotAbsoluteXY(event.data.to.slot);
+            player.moveToXY(pos[0],pos[1]);
+        }
+
     });
 
-    socket.on(ZT.Events.PLAYER_JOIN,function(data){
-        if(that.events[data.id]) return;
-        if(that.game.playerModel.id === data.actor) return;
+    socket.on(ZT.shared.events.PLAYER_JOIN,function(event){
+        if(that.events[event.id]) return;
+        if(that.game.playerModel.id === event.actor) return;
 
-        var model = new PlayerModel(data.model);
-        var player = new ZT.Thing({tile: this.game.map.getTileByTileXY(model.x,model.y), slot: model.slot, model: model, game: that.game, image:"walking", animation: 'walk'});
+        var model = new PlayerModel(event.data.player);
+        var player = new ZT.Thing({tile: that.game.map.getTileByTileXY(model.get("x"),model.get("y")), slot: model.slot, model: model, game: that.game, image:"walking", animation: 'walk'});
         that.game.playerLayer.add(player.sprite);
         that.game.players[model.id] = player;
 

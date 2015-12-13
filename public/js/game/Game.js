@@ -1,7 +1,12 @@
-
+//IMPLEMENTAR OUTRO PLAYER SAINDO E ENTRANDO NAS MINHAS REGIÕES
 //ESTRUTURAR MELHOR EVENTOS (considerar um esquema de RPC)
 //IMPLEMENTAR CALLBACK NO MOVEPLAYER DO MODEL PARA VALIDAR SE MOVIMENTO DEU CERTOo
 //MELHOR METODO DE MOVETO DA THING PARA PASSAR UM SLOT!
+//NÃO PERMITIR QUE PLAYERS SE COLIDAM (o player empurrado desliza longe)
+
+//10915840
+//1384448
+//1384448
 
 //Event structure
 // actor: user that generated event (or system)
@@ -43,6 +48,7 @@ ZT.Game = function(options){
 
     _.extend(this, Backbone.Events);
 
+    //default values
     this.options = _.extend({
         visibleTiles: 11, //number of tiles visible (square). OBS: must be odd
         regionTiles: 11, //number of tiles in a region (square)
@@ -68,7 +74,6 @@ ZT.Game = function(options){
     this.players = {};
 
     this.events = new ZT.Events({game: this});
-    console.log(this.events);
     this.events.handleEvents();
 
     var game = this;
@@ -163,8 +168,8 @@ ZT.Game = function(options){
 
         game.phaser.physics.startSystem(Phaser.Physics.ARCADE);
 
-        var mapCenterX = game.tileSize * game.playerModel.x;
-        var mapCenterY = game.tileSize * game.playerModel.y;
+        var mapCenterX = game.tileSize * game.playerModel.get("x");
+        var mapCenterY = game.tileSize * game.playerModel.get("y");
 
         var initX = - game.width/2 + game.tileSize/2 + mapCenterX;
         var initY = - game.height/2 + game.tileSize/2 + mapCenterY;
@@ -191,8 +196,8 @@ ZT.Game = function(options){
             totalTiles: game.totalSize,
             tileSize: game.tileSize,
             slotSize: game.slotSize,
-            centerX: game.playerModel.x,
-            centerY: game.playerModel.y,
+            centerX: game.playerModel.get("x"),
+            centerY: game.playerModel.get("y"),
             regionTiles: game.regionTiles
         });
 
@@ -203,13 +208,13 @@ ZT.Game = function(options){
 
         //once the map finished loading tiles, add user
         game.map.once('loaded',function(){
-            game.player = new ZT.Thing({tile: game.map.getTileByTileXY(game.playerModel.x,game.playerModel.y), slot: game.playerModel.slot, model: game.playerModel, game:game, image:"walking", animation: 'walk'});
+            game.player = new ZT.Thing({tile: game.map.getTileByTileXY(game.playerModel.get("x"),game.playerModel.get("y")), slot: game.playerModel.get("slot"), model: game.playerModel, game:game, image:"walking", animation: 'walk'});
             //game.phaser.camera.follow(game.player.sprite);
             game.playerLayer.add(game.player.sprite);
 
             game.playersModels.each(function(playerModel){
                 if(playerModel.id === game.playerModel.id) return;
-                var player = new ZT.Thing({tile: game.map.getTileByTileXY(playerModel.x,playerModel.y), slot: playerModel.slot, model: playerModel, game:game, image:"walking", animation: 'walk',goback: true});
+                var player = new ZT.Thing({tile: game.map.getTileByTileXY(playerModel.get("x"),playerModel.get("y")), slot: playerModel.get("slot"), model: playerModel, game:game, image:"walking", animation: 'walk'});
                 game.playerLayer.add(player.sprite);
                 game.players[playerModel.id] = player;
             });
@@ -279,7 +284,7 @@ ZT.Game = function(options){
 };
 
 ZT.Game.prototype.moveRelative = function(relX, relY, slot){
-    game.playerModel.moveTo(game.playerModel.x + relX, game.playerModel.y + relY, slot);
+    game.playerModel.moveTo(game.playerModel.get("x") + relX, game.playerModel.get("y") + relY, slot);
     game.map.moveRelative(relX, relY);
     game.phaser.world.setBounds(game.phaser.world.bounds.x + (relX * this.tileSize),game.phaser.world.bounds.y + (relY * this.tileSize),game.width,game.height);
 };

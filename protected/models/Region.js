@@ -1,36 +1,20 @@
 var Tile = require("./Tile.js");
 
 var RegionSchema = app.mongoose.Schema({
-    pos: {type: [Number], index: true},
+    x: Number,
+    y: Number,
     tiles: [Tile.schema]
 });
 
-RegionSchema.statics.findOneByPos = function (x, y, cb) {
-
-    if(x instanceof Array){
-        cb = y;
-        y = x[1];
-        x = x[0];
-    }
-
-    this.find({ pos: {$geoWithin : {
-        $box : [[x, y], [x, y]]
-    }}}, function(err,tile){
-
-        if(err || !tile || tile.length===0) cb(err,tile);
-
-        cb(err,tile[0]);
-
-    });
-};
+RegionSchema.index({ x: 1, y: 1 }, { unique: true });
 
 RegionSchema.statics.insertInEmptySlotStand = function (tileX, tileY, slot, entity, cb) {
 
-    var regionPos = app.services.Map.regionPosByTile(tileX,tileY);
-    var tileIndex = app.services.Map.tileArrayIndex(tileX,tileY);
+    var regionXY = app.shared.mapHelper.regionXYByTileXY(tileX,tileY);
+    var tileIndex = app.shared.mapHelper.tileArrayIndex(tileX,tileY);
     var path = 'tiles.' + tileIndex + '.slots.' + slot + '.stand';
 
-    var query = {pos: regionPos};
+    var query = {x: regionXY.x, y: regionXY.y};
     query[path] = {$exists: false};
 
     var update = {};
@@ -42,11 +26,11 @@ RegionSchema.statics.insertInEmptySlotStand = function (tileX, tileY, slot, enti
 
 RegionSchema.statics.clearSlotStand = function (tileX, tileY, slot, cb) {
 
-    var regionPos = app.services.Map.regionPosByTile(tileX,tileY);
-    var tileIndex = app.services.Map.tileArrayIndex(tileX,tileY);
+    var regionXY = app.shared.mapHelper.regionXYByTileXY(tileX,tileY);
+    var tileIndex = app.shared.mapHelper.tileArrayIndex(tileX,tileY);
     var path = 'tiles.' + tileIndex + '.slots.' + slot + '.stand';
 
-    var query = {pos: regionPos};
+    var query = {x: regionXY.x, y: regionXY.y};
 
     var update = {$unset: {}};
     update.$unset[path] = 1;

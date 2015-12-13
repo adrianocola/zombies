@@ -14,6 +14,7 @@ app.get('/login', function (req, res) {
 
 });
 
+// SIGNUP
 app.post('/login', function (req, res) {
 
     var username = req.body.username;
@@ -24,8 +25,10 @@ app.post('/login', function (req, res) {
 
             player = new app.models.Player({
                 name: username,
-                region: [5,5],
-                pos: [55,55],
+                rx: 5,
+                ry: 5,
+                x: 55,
+                y: 55,
                 slot: 0
             });
             player.save(function(err){
@@ -37,13 +40,15 @@ app.post('/login', function (req, res) {
 
         req.session.player = player;
 
-        var regionId = app.services.Map.regionIdByTile(player.pos[0],player.pos[1]);
+        var regionId = app.shared.mapHelper.regionIdByTileXY(player.x,player.y);
 
-        app.io.to(regionId).emit(app.shared.Events.PLAYER_JOIN,{
+        app.io.to(regionId).emit(app.shared.events.PLAYER_JOIN,{
             id: app.shortId.generate(),
             actor: player._id,
-            at: {pos: player.pos, slot: player.slot},
-            model: player
+            data: {
+                at: {x: player.x, y: player.y, slot: player.slot},
+                player: player
+            }
         });
 
         return res.redirect('/');

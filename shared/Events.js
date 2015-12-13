@@ -8,4 +8,4 @@
     ctx.PLAYER_UPDATE = "PLAYER_UPDATE";
     ctx.TILE_UPDATE = "TILE_UPDATE";
 
-})( typeof exports !== 'undefined'? exports: this.ZT.Events );
+})( typeof exports !== 'undefined'? exports: this.ZT["shared"].events = {} );

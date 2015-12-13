@@ -14,13 +14,10 @@ var TileModel = Backbone.Model.extend({
             this.slots.add(value);
         },this);
 
-        this.x = this.get("pos")[0];
-        this.y = this.get("pos")[1];
-
     },
 
     getId: function(){
-        return TileModel.generateId(this.get("pos")[0],this.get("pos")[1]);
+        return TileModel.generateId(this.get("x"),this.get("y"));
     }
 
 });

@@ -73,22 +73,22 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(multer());
 app.use(favicon('./public/favicon.ico'));
 app.use(stylus.middleware({ src: './public', compile: compile_nib}));
-app.use(serveStatic('./shared'));
+app.use('/shared',serveStatic('./shared'));
 app.use(serveStatic('./public'));
 app.use(serveStatic('./assets'));
+
+//**********
+//    APP
+//**********
+app.consts = _.extend(require('./shared/consts'),require('./protected/config/consts'));
+app.services = require('./protected/services');
+app.models = require('./protected/models');
+app.routes = require('./protected/routes');
 
 //**********
 //  SHARED
 //**********
 app.shared = require('./shared');
-
-//**********
-//    APP
-//**********
-app.consts = require('./protected/config/consts');
-app.services = require('./protected/services');
-app.models = require('./protected/models');
-app.routes = require('./protected/routes');
 
 //**********
 // SOCKET.io
@@ -107,12 +107,12 @@ io.on('connection', function (socket) {
 
     socket.data = {};
 
-    socket.on(app.shared.Events.ENTER_REGION,function(region_id){
+    socket.on(app.shared.events.ENTER_REGION,function(region_id){
         app.log.debug("ENTER REGION: " + region_id);
         socket.join(region_id);
     });
 
-    socket.on(app.shared.Events.LEAVE_REGION,function(region_id){
+    socket.on(app.shared.events.LEAVE_REGION,function(region_id){
         app.log.debug("LEAVE REGION: " + region_id);
         socket.leave(region_id);
     });

@@ -11,6 +11,7 @@ ZT.Map = function(options){
 
     _.extend(this, Backbone.Events);
 
+    //default values
     this.options = _.extend({
         game: undefined, //game reference
         totalTiles: 21,//total number of tiles (per axis)
@@ -58,7 +59,6 @@ ZT.Map = function(options){
     this.regionsModels = new RegionCollection();
 
     this.regionsModels.on('sync',function(){
-        console.log("SYNC");
         //update visible tiles and cached tiles
         this.updateCachedTiles();
     },this);
@@ -73,10 +73,13 @@ ZT.Map = function(options){
 
 };
 
+ZT.Map.prototype.getRegionByTileXY = function(tileX, tileY){
+    var regionXY = ZT.shared.mapHelper.regionXYByTileXY(tileX,tileY);
+    return this.regionsModels.regionMap[RegionModel.generateId(regionXY.x,regionXY.y)];
+};
+
 ZT.Map.prototype.getTileByTileXY = function(tileX, tileY){
-
     return this.tiles[tileX + ":" + tileY];
-
 };
 
 ZT.Map.prototype.getTileByWorldXY = function(worldX, worldY){
@@ -101,8 +104,8 @@ ZT.Map.prototype.getTileSlotByWorldXY = function(worldX, worldY){
 
 ZT.Map.prototype.addTile = function(tileModel){
 
-    var x = tileModel.get('pos')[0];
-    var y = tileModel.get('pos')[1];
+    var x = tileModel.get('x');
+    var y = tileModel.get('y');
 
     var tile = new ZT.Tile({
         game: this.game,
@@ -168,7 +171,7 @@ ZT.Map.prototype.centerTo = function(toX,toY){
                 continue;
             }
 
-            regions.push([x,y]);
+            regions.push({x: x,y: y});
         }
     }
 
@@ -196,7 +199,7 @@ ZT.Map.prototype.updateCachedTiles = function(sync){
         }else if(this.lastCachedRegions[regionModel.getId()] && !this.cachedRegions[regionModel.getId()]){
             toRemove.push(regionModel);
             regionModel.tiles.each(function(tileModel){
-                this.getTileByTileXY(tileModel.x,tileModel.y).destroy();
+                this.getTileByTileXY(tileModel.get("x"),tileModel.get("y")).destroy();
             },this);
         }
 

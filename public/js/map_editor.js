@@ -192,7 +192,7 @@ var EditorMapView = Backbone.View.extend({
 
         for(var x = this.firstRegionX; x < this.lastRegionX; x++){
             for(var y = this.firstRegionY; y < this.lastRegionY; y++){
-                regions.push([x,y]);
+                regions.push({x:x,y:y});
             }
         }
 
@@ -327,8 +327,8 @@ var EditorMapTileView = Backbone.View.extend({
         this.options = options || {};
 
         this.editorMap = this.options.editorMap;
-        this.x = this.model.get('pos')[0];
-        this.y = this.model.get('pos')[1];
+        this.x = this.model.get('x');
+        this.y = this.model.get('y');
 
         this.template = JST["public/partials/editor/map_tile.html"];
 

@@ -10,7 +10,7 @@ app.get('/api/editor/resetWorld', function (req, res) {
 
     var toX = parseInt(req.query.x || 10);
     var toY = parseInt(req.query.y || 10);
-    var size = parseInt(req.query.size || app.consts.regionSize);
+    var size = parseInt(req.query.size || app.consts.regionTiles);
 
     var total = (toX + 1) * (toY + 1);
 
@@ -58,17 +58,18 @@ app.get('/api/editor/resetWorld', function (req, res) {
         },function(done){
 
             region = new app.models.Region({
-                pos: [x, y]
+                x: x,
+                y: y
             });
 
             for(var i=0;i<size;i++){
                 for(var j=0;j<size;j++) {
-                    var tile = new app.models.Tile({type: 1, pos: [(x*size)+i,(y*size)+j],slots:{}});
-                    var tc = _.random(0,3);
+                    var tile = new app.models.Tile({type: 1, x: (x*size)+j, y:(y*size)+i,slots:{}});
+                    var tc = _.random(0,2);
                     while(tc>0){
 
                         tile.slots[_.random(0,9)] = {
-                            floor: [],
+                            //floor: [],
                             stand: new app.models.Thing({
                                 "name" : "zombie",
                                 "type" : 2
@@ -77,14 +78,14 @@ app.get('/api/editor/resetWorld', function (req, res) {
 
                         tc--;
                     }
-                    for(var k=0;k<9;k++){
-                        if(!tile.slots[k]){
-                            tile.slots[k] = {
-                                floor: [],
-                                stand: undefined
-                            }
-                        }
-                    }
+                    //for(var k=0;k<9;k++){
+                    //    if(!tile.slots[k]){
+                    //        tile.slots[k] = {
+                    //            floor: [],
+                    //            stand: undefined
+                    //        }
+                    //    }
+                    //}
 
                     region.tiles.push(tile);
                 }
@@ -127,7 +128,7 @@ app.get('/api/editor/regions', function (req, res) {
 
     var start = new Date();
 
-    var query = {pos: {$in: JSON.parse(req.query.points)}};
+    var query = {$or: JSON.parse(req.query.points)};
 
     //avoid empty search error
     if(query.$or && query.$or.length===0) return res.json([]);
@@ -146,23 +147,21 @@ app.put('/api/editor/tiles/:id', function (req, res) {
     var tile = req.body;
 
     //prevent position update
-    delete tile.pos;
+    delete tile.x;
+    delete tile.y;
 
     if(typeof req.params.id !== 'string') return json(500,false);
 
-    var pos = app.models.Tile.getArrayIndexByTileId(req.params.id);
-
-    //console.log('id: ' + id);
-    //console.log('region: ' + region);
-    //console.log('pos: ' + pos);
+    var tileXY = app.shared.mapHelper.tileXYByTileId(req.params.id);
+    var tileIndex = app.shared.mapHelper.tileArrayIndex(tileXY.x,tileXY.y);
 
     var $set = {};
     for (var key in tile) {
-        $set['tiles.'+pos+'.'+key] = tile[key];
+        $set['tiles.'+tileIndex+'.'+key] = tile[key];
     }
 
     app.models.Region.update({
-        pos: app.models.Tile.getRegionByTileId(req.params.id)
+        pos: app.shared.regionIdByTileXY(tileXY.x,tileXY.y)
     },{ "$set": $set},function(err,updated){
 
         if(err) console.log(err);

@@ -3,6 +3,7 @@ ZT.Tile = function(options){
 
     _.extend(this, Backbone.Events);
 
+    //default values
     this.options = _.extend({
         game: undefined, //game reference
         model: undefined, //tileModel

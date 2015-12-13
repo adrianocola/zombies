@@ -8,6 +8,11 @@ block head_css
 
 block body_js
 
+   //SHARED
+   script(src="/shared/consts.js")
+   script(src="/shared/mapHelper.js")
+   script(src="/shared/events.js")
+
    script(src="/js/vendor/phaser_2.4.4.js")
 
    script(src="/js/models/Player.js")
@@ -18,10 +23,6 @@ block body_js
    script(src="/js/game/Map.js")
    script(src="/js/game/Game.js")
    script(src="/js/game/Events.js")
-
-   //SHARED
-   script(src="/lib/MapLogic.js")
-   script(src="/lib/Events.js")
 
    script(src="/js/index3.js")
 
