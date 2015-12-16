@@ -1,16 +1,16 @@
 {
-  "tiles": {
+  "things": {
     "1": {
-      "id": "1",
+      "id": 1,
       "name": "person",
-      "width": "16",
-      "height": "16"
+      "width": 16,
+      "height": 16
     },
     "2": {
-      "id": "2",
+      "id": 2,
       "name": "zombie",
-      "width": "48",
-      "height": "48"
+      "width": 48,
+      "height": 48
     }
   }
 }

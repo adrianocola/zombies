@@ -1,31 +1,31 @@
 {
   "tiles": {
     "1": {
-      "id": "1",
+      "id": 1,
       "name": "grass",
-      "width": "96",
-      "height": "96"
+      "width": 96,
+      "height": 96
     },
     "2": {
-      "id": "2",
+      "id": 2,
       "name": "building",
       "body": "rigid",
       "shadow": true,
-      "width": "64",
-      "height": "64"
+      "width": 64,
+      "height": 64
     },
     "3": {
-      "id": "3",
+      "id": 3,
       "name": "road",
-      "width": "48",
-      "height": "48"
+      "width": 48,
+      "height": 48
     },
     "4": {
       "id": 4,
       "name": "water",
-      "width": "96",
-      "height": "96",
-      "body": true
+      "width": 96,
+      "height": 96,
+      "body": "rigid"
     }
   }
 }

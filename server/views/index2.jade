@@ -1,0 +1,14 @@
+extends /templates/main2
+
+block head
+   title ZombieTown!
+
+block head_css
+   link(rel='stylesheet', href='/#{locals.cssFileName}')
+
+block body_js
+
+   script(src="/#{locals.jsFileName}")
+
+block body
+   div #{player.name}
